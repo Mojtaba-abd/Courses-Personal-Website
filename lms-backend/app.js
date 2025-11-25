@@ -63,7 +63,7 @@ app.use("/uploads", Express.static(path.join(__dirname, "public", "uploads")));
 
 // Use URL or MONGODB_URI from environment
 const mongoUrl = process.env.URL || process.env.MONGODB_URI;
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8000;
 
 if (!mongoUrl) {
   console.error("❌ Error: MongoDB connection string not found!");

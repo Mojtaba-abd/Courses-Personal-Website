@@ -35,9 +35,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileUpload } from "@/components/file-upload";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
+import { ImageIcon, X } from "lucide-react";
 
 interface Certificate {
   _id?: string;
@@ -63,6 +63,8 @@ const CertificationsPage = () => {
   const [deletingCertificate, setDeletingCertificate] = useState<Certificate | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
 
@@ -99,13 +101,65 @@ const CertificationsPage = () => {
   const openCreateDialog = () => {
     setEditingCertificate(null);
     setImageUrl("");
+    setImagePreview("");
     setCreateDialogOpen(true);
   };
 
   const openEditDialog = (certificate: Certificate) => {
     setEditingCertificate(certificate);
-    setImageUrl(certificate.imageUrl || "");
+    const url = certificate.imageUrl || "";
+    setImageUrl(url);
+    setImagePreview(url);
     setEditDialogOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image size must be less than 10MB");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await axios.post(
+        `${API_URL}/api/upload/image`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const uploadedUrl = response.data.url;
+      setImageUrl(uploadedUrl);
+      setImagePreview(uploadedUrl);
+      toast.success("Image uploaded successfully");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.response?.data?.error || "Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setImageUrl("");
+    setImagePreview("");
   };
 
   const openDeleteDialog = (certificate: Certificate) => {
@@ -307,6 +361,7 @@ const CertificationsPage = () => {
             setEditDialogOpen(false);
             setEditingCertificate(null);
             setImageUrl("");
+            setImagePreview("");
           }
         }}
       >
@@ -379,25 +434,59 @@ const CertificationsPage = () => {
                 />
               </div>
               <div className="grid gap-2">
-                <Label>Certificate Image *</Label>
-                {editingCertificate?.imageUrl && (
-                  <div className="relative w-full h-48 mb-2">
+                <Label htmlFor="certificate-image">Certificate Image *</Label>
+                {imagePreview ? (
+                  <div className="relative w-full h-48 mb-2 border rounded-lg overflow-hidden">
                     <Image
-                      src={editingCertificate.imageUrl}
-                      alt={editingCertificate.title}
+                      src={imagePreview}
+                      alt="Certificate preview"
                       fill
-                      className="object-contain rounded border"
+                      className="object-contain"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={removeImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center w-full h-48 border-2 border-dashed rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+                    <label
+                      htmlFor="certificate-image"
+                      className="flex flex-col items-center justify-center w-full h-full cursor-pointer"
+                    >
+                      <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        {isUploading ? "Uploading..." : "Click to upload or drag and drop"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PNG, JPG, GIF up to 10MB
+                      </p>
+                    </label>
+                    <input
+                      id="certificate-image"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={isUploading}
                     />
                   </div>
                 )}
-                <FileUpload
-                  endpoint="courseImage"
-                  onChange={(url) => {
-                    if (url) {
-                      setImageUrl(url);
-                    }
-                  }}
-                />
+                {!imagePreview && (
+                  <input
+                    type="file"
+                    id="certificate-image-alt"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    disabled={isUploading}
+                  />
+                )}
                 <input type="hidden" name="imageUrl" value={imageUrl} />
                 <p className="text-xs text-muted-foreground">
                   Upload a clear image of your certificate
@@ -413,6 +502,7 @@ const CertificationsPage = () => {
                   setEditDialogOpen(false);
                   setEditingCertificate(null);
                   setImageUrl("");
+                  setImagePreview("");
                 }}
               >
                 Cancel

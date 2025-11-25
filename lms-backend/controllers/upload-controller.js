@@ -73,7 +73,9 @@ export const uploadImage = async (req, res) => {
       return res.status(400).json({ error: "No image uploaded" });
     }
 
-    const imageUrl = `/uploads/${req.file.filename}`;
+    // Return full URL with backend host
+    const backendUrl = process.env.BACK_END_URL || `http://localhost:${process.env.PORT || 8000}`;
+    const imageUrl = `${backendUrl}/uploads/${req.file.filename}`;
 
     res.status(200).json({
       url: imageUrl,
