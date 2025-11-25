@@ -26,6 +26,10 @@ const courseSchema = mongoose.Schema(
       type: String,
       default: "",
     },
+    featuredImage: {
+      type: String,
+      default: "",
+    },
     category: {
       type: String,
       default: "",

@@ -15,10 +15,13 @@ export const createCourse = async (req, res) => {
       return res.status(401).json({ error: "User not authenticated" });
     }
     
+    const { featuredImage, category } = req.body;
     const course = await courseModel.create({
       title: title.trim(),
       description: description || "",
       imageUrl: imageUrl || "",
+      featuredImage: featuredImage || "",
+      category: category || "",
       userId: userId,
       price: 0,
       published: false,
@@ -115,7 +118,7 @@ export const getOneCourse = async (req, res) => {
 export const updateCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { title, description, instructor, price, imageUrl, category, categoryId, duration, level, published, enrolledUsers } = req.body;
+    const { title, description, instructor, price, imageUrl, featuredImage, category, categoryId, duration, level, published, enrolledUsers } = req.body;
 
     const course = await courseModel.findById(courseId);
     if (!course) {
@@ -128,6 +131,7 @@ export const updateCourse = async (req, res) => {
     if (instructor !== undefined) course.instructor = instructor;
     if (price !== undefined) course.price = price;
     if (imageUrl !== undefined) course.imageUrl = imageUrl;
+    if (featuredImage !== undefined) course.featuredImage = featuredImage;
     if (category !== undefined) course.category = category;
     if (categoryId !== undefined) course.categoryId = categoryId;
     if (duration !== undefined) course.duration = duration;

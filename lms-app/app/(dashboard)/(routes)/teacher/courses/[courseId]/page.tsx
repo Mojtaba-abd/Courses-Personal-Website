@@ -12,6 +12,8 @@ import CategoryForm from "./_components/category-form";
 import PriceForm  from "./_components/price-form";
 import AttachmentsForm from "./_components/attachments-form";
 import ChapterForm from "./_components/chpater-form";
+import FeaturedImageForm from "@/app/dashboard/teacher/courses/[courseId]/_components/featured-image-form";
+import CategoryInputForm from "@/app/dashboard/teacher/courses/[courseId]/_components/category-input-form";
 import { Banner } from "@/components/banner";
 import { Actions } from "./_components/actions";
 
@@ -98,10 +100,12 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
           <TitleForm intialData={course} courseId={course._id} />
           <DescriptionForm intialData={course} courseId={course._id} />
           <ImageForm intialData={course} courseId={course._id} />
+          <FeaturedImageForm initialData={course} courseId={course._id} />
           <CategoryForm 
           intialData={course} 
           courseId={course._id} 
           options={categories.map((category : {name: string, _id: string}) => ({label: category.name, value: category._id}))} />
+          <CategoryInputForm initialData={course} courseId={course._id} />
         </div>
 
 

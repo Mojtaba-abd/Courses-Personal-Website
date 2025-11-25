@@ -63,8 +63,15 @@ export const getOnePostById = async (req, res) => {
 
 export const createPost = async (req, res) => {
   try {
+    const { title, slug, excerpt, content, featuredImage, category, isPublished } = req.body;
     const post = await postModel.create({
-      ...req.body,
+      title,
+      slug,
+      excerpt: excerpt || "",
+      content,
+      featuredImage: featuredImage || "",
+      category: category || "",
+      isPublished: isPublished || false,
       author: req.user.userId,
     });
     const populatedPost = await postModel.findById(post._id).populate("author", "username email");
@@ -78,9 +85,18 @@ export const createPost = async (req, res) => {
 export const updatePost = async (req, res) => {
   try {
     const { postId } = req.params;
+    const { title, slug, excerpt, content, featuredImage, category, isPublished } = req.body;
     const post = await postModel.findByIdAndUpdate(
       postId,
-      req.body,
+      {
+        title,
+        slug,
+        excerpt: excerpt || "",
+        content,
+        featuredImage: featuredImage || "",
+        category: category || "",
+        isPublished: isPublished || false,
+      },
       { new: true, runValidators: true }
     ).populate("author", "username email");
 

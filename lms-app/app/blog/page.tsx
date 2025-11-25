@@ -14,6 +14,7 @@ interface Post {
   slug: string;
   excerpt: string;
   featuredImage?: string;
+  category?: string;
   publishedAt?: string;
   createdAt: string;
   author?: {
@@ -105,6 +106,11 @@ const BlogPage = () => {
                         </div>
                       )}
                       <CardContent className="p-6 flex-1 flex flex-col">
+                        {post.category && (
+                          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary mb-2 w-fit">
+                            {post.category}
+                          </span>
+                        )}
                         <h2 className="text-xl font-semibold mb-2 line-clamp-2">
                           {post.title}
                         </h2>

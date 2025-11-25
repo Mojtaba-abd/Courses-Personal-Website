@@ -88,6 +88,11 @@ const BlogPostPage = () => {
       <article className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <header className="mb-8">
+            {post.category && (
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary mb-4">
+                {post.category}
+              </span>
+            )}
             <h1 className="text-4xl md:text-5xl font-bold mb-4">{post.title}</h1>
             {post.excerpt && (
               <p className="text-xl text-muted-foreground mb-6">{post.excerpt}</p>
