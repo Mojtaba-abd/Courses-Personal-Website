@@ -1,6 +1,6 @@
 "use client"
 
-import {Compass, Layout,List, BarChart, Users} from "lucide-react"
+import {Compass, Layout,List} from "lucide-react"
 import SidebarItem from "./sidebar-item";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
@@ -23,11 +23,6 @@ const teacherRoutes = [
         icon: List,
         label: "Courses",
         href: "/dashboard/teacher/courses"
-    },
-    {
-        icon: BarChart,
-        label: "Analytics",
-        href: "/dashboard/teacher/analytics"
     }
 ]
 

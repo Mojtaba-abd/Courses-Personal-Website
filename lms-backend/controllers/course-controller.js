@@ -2,22 +2,30 @@ import courseModel from "../models/course-model.js";
 
 export const createCourse = async (req, res) => {
   try {
-    const { title, description, instructor, price, imageUrl, category, categoryId, duration, level, published, userId, enrolledUsers } = req.body;
+    const { title, description, imageUrl } = req.body;
+    
+    // Validate required fields
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+
+    // Get userId from authenticated user
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
     
     const course = await courseModel.create({
-      title,
+      title: title.trim(),
       description: description || "",
-      instructor: instructor || "",
-      price: price || 0,
       imageUrl: imageUrl || "",
-      category: category || "",
-      categoryId: categoryId || "",
-      duration: duration || "",
-      level: level || "beginner",
-      published: published || false,
-      isPublished: published || false,
-      enrolledUsers: enrolledUsers || [],
-      userId: userId || req.user?.userId,
+      userId: userId,
+      price: 0,
+      published: false,
+      isPublished: false,
+      enrolledUsers: [],
+      attachments: [],
+      purchased: {},
     });
     
     res.status(201).json(course);

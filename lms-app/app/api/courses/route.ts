@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth-server";
 import axios from "axios";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
   try {
@@ -9,14 +10,27 @@ export async function POST(req: Request) {
 
     const { title } = await req.json();
 
-    const course = await axios.post(`${process.env.BACK_END_URL}/api/courses`, {
-      userId: user.userId,
-      title,
-    });
+    // Get the token cookie to forward to backend
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
 
-    return NextResponse.json(course.data);
-  } catch (error) {
+    const course = await axios.post(
+      `${process.env.BACK_END_URL || "http://localhost:8000"}/api/courses`,
+      { title },
+      {
+        headers: {
+          Cookie: token ? `token=${token}` : "",
+        },
+        withCredentials: true,
+      }
+    );
+
+    return NextResponse.json(course.data, { status: 201 });
+  } catch (error: any) {
     console.log("[courses]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return new NextResponse(
+      error.response?.data?.error || "Internal Error",
+      { status: error.response?.status || 500 }
+    );
   }
 }

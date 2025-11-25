@@ -20,8 +20,8 @@ courseRouter.get("/", optionalAuth, getAllCourses);
 courseRouter.get("/:courseId", optionalAuth, getOneCourse);
 courseRouter.get("/user/:userId/purchased", getPurchasedCourses);
 
-// Admin-only routes
-courseRouter.post("/", authenticate, requireAdmin, createCourse);
+// Authenticated routes (teachers and admins can create courses)
+courseRouter.post("/", authenticate, createCourse);
 courseRouter.put("/:courseId", authenticate, requireAdmin, updateCourse);
 courseRouter.delete("/:courseId", authenticate, requireAdmin, deleteCourse);
 

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
 import {Form,FormControl,FormDescription,FormField,FormItem,FormLabel,FormMessage} from "@/components/ui/form"
-import {Input,InputProps} from "@/components/ui/input"
+import {Input} from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import toast from "react-hot-toast"
@@ -105,3 +105,4 @@ const CreatePage = () => {
 }
  
 export default CreatePage;
+
