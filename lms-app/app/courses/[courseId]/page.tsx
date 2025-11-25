@@ -98,17 +98,52 @@ const CoursePage = () => {
         setIsEnrolled(userEnrolled);
 
         // If enrolled, find first lesson URL for "Start Learning" button
+        // Use populated chapters from course data if available, otherwise fetch separately
         if (userEnrolled) {
           try {
-            const chaptersRes = await axios.get(`${API_URL}/api/chapters/${courseId}/published`);
-            const chapters = chaptersRes.data || [];
+            console.log("User is enrolled, looking for first lesson...");
+            console.log("Course data chapters:", courseData.chapters);
+            
+            let chapters = courseData.chapters || [];
+            
+            // If chapters not populated in response, fetch them separately
+            if (!chapters || chapters.length === 0) {
+              console.log("Chapters not in course data, fetching separately...");
+              const chaptersRes = await axios.get(`${API_URL}/api/chapters/${courseId}/published`);
+              chapters = chaptersRes.data || [];
+              console.log("Fetched chapters:", chapters.length);
+            }
+
             if (chapters.length > 0) {
-              const firstChapter = chapters.sort((a: Chapter, b: Chapter) => a.position - b.position)[0];
-              const lessonsRes = await axios.get(`${API_URL}/api/lessons/chapter/${firstChapter._id}`);
-              const lessons = (lessonsRes.data || []).sort((a: Lesson, b: Lesson) => a.position - b.position);
-              if (lessons.length > 0) {
-                setFirstLessonUrl(`/courses/${courseId}/chapters/${firstChapter._id}/lessons/${lessons[0]._id}`);
+              // Sort chapters by position
+              const sortedChapters = chapters.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+              const firstChapter = sortedChapters[0];
+              console.log("First chapter:", firstChapter._id, firstChapter.title);
+              
+              // Check if lessons are already populated in chapter object
+              let lessons = firstChapter.lessons || [];
+              console.log("Lessons in chapter:", lessons.length);
+              
+              // If lessons not populated, fetch them separately
+              if (!lessons || lessons.length === 0) {
+                console.log("Lessons not in chapter, fetching separately...");
+                const lessonsRes = await axios.get(`${API_URL}/api/lessons/chapter/${firstChapter._id}`);
+                lessons = lessonsRes.data || [];
+                console.log("Fetched lessons:", lessons.length);
               }
+              
+              // Sort lessons by position
+              const sortedLessons = lessons.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+              
+              if (sortedLessons.length > 0) {
+                const firstLessonUrl = `/courses/${courseId}/chapters/${firstChapter._id}/lessons/${sortedLessons[0]._id}`;
+                console.log("Setting first lesson URL:", firstLessonUrl);
+                setFirstLessonUrl(firstLessonUrl);
+              } else {
+                console.log("No lessons found in first chapter");
+              }
+            } else {
+              console.log("No chapters found");
             }
           } catch (error) {
             console.error("Error fetching first lesson:", error);
@@ -240,7 +275,7 @@ const CoursePage = () => {
                         if (firstLessonUrl) {
                           router.push(firstLessonUrl);
                         } else {
-                          toast.info("No lessons available yet");
+                          toast("No lessons available yet");
                         }
                       }}
                     >

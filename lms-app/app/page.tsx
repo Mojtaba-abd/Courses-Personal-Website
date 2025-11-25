@@ -63,7 +63,7 @@ const HomePage = () => {
   const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
 
   useEffect(() => {
     fetchData();
@@ -76,20 +76,13 @@ const HomePage = () => {
       // Fetch certificates - using /api/certificates/public (no auth required)
       const certsUrl = `${API_URL}/api/certificates/public`;
       console.log("🔍 Fetching certificates from:", certsUrl);
-      console.log("📡 API_URL:", API_URL);
       let certsRes;
       try {
         certsRes = await axios.get(certsUrl, { withCredentials: false });
         console.log("✅ Certificates response status:", certsRes.status);
-        console.log("✅ Certificates response data:", certsRes.data);
         console.log("✅ Certificates count:", Array.isArray(certsRes.data) ? certsRes.data.length : 0);
       } catch (err: any) {
-        console.error("❌ Error fetching certificates:");
-        console.error("  Status:", err.response?.status);
-        console.error("  Status Text:", err.response?.statusText);
-        console.error("  Data:", err.response?.data);
-        console.error("  Message:", err.message);
-        console.error("  Full error:", err);
+        console.error("❌ Error fetching certificates:", err.response?.status, err.response?.data || err.message);
         certsRes = { data: [] };
       }
       const allCertificates = Array.isArray(certsRes.data) ? certsRes.data : [];
@@ -276,11 +269,20 @@ const HomePage = () => {
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">الشهادات والاعتمادات</h2>
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="overflow-hidden">
+                  <div className="w-full h-48 bg-muted animate-pulse" />
+                  <CardContent className="p-6">
+                    <div className="h-6 bg-muted rounded animate-pulse mb-2" />
+                    <div className="h-4 bg-muted rounded animate-pulse mb-2" />
+                    <div className="h-4 bg-muted rounded animate-pulse w-2/3" />
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           ) : certificates.length === 0 ? (
-            <p className="text-center text-muted-foreground">No certifications added yet</p>
+            <p className="text-center text-muted-foreground">لا توجد شهادات متاحة حالياً</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {certificates.map((cert) => (
@@ -329,8 +331,17 @@ const HomePage = () => {
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">آخر المقالات والأخبار</h2>
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="overflow-hidden">
+                  <div className="w-full h-48 bg-muted animate-pulse" />
+                  <CardContent className="p-6">
+                    <div className="h-4 bg-muted rounded animate-pulse mb-2 w-20" />
+                    <div className="h-6 bg-muted rounded animate-pulse mb-2" />
+                    <div className="h-4 bg-muted rounded animate-pulse" />
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           ) : posts.length === 0 ? (
             <p className="text-center text-muted-foreground">لا توجد مقالات متاحة حالياً</p>
@@ -386,8 +397,18 @@ const HomePage = () => {
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">أحدث الدورات</h2>
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="overflow-hidden">
+                  <div className="w-full h-48 bg-muted animate-pulse" />
+                  <CardContent className="p-6">
+                    <div className="h-4 bg-muted rounded animate-pulse mb-2 w-20" />
+                    <div className="h-6 bg-muted rounded animate-pulse mb-2" />
+                    <div className="h-4 bg-muted rounded animate-pulse mb-4" />
+                    <div className="h-10 bg-muted rounded animate-pulse" />
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           ) : courses.length === 0 ? (
             <p className="text-center text-muted-foreground">No published courses yet</p>

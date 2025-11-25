@@ -54,6 +54,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Cookie");
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   
   // Handle preflight OPTIONS requests
   if (req.method === "OPTIONS") {

@@ -161,8 +161,8 @@ const CourseIdPage = () => {
 
     if (user && courseId) {
       fetchCourseData();
-      // Fetch users for enrollment section
-      if (user.role === "admin") {
+      // Fetch users for enrollment section (teachers and admins can manage enrollment)
+      if (user.role === "admin" || user.role === "teacher") {
         fetchUsers();
       }
     }
@@ -391,9 +391,9 @@ const CourseIdPage = () => {
 
   const handleEnrollmentSubmit = async () => {
     try {
-      // Use PATCH for course update (works for authenticated users)
+      // Use Next.js API route which forwards authentication properly
       await axios.patch(
-        `${API_URL}/api/courses/${courseId}`,
+        `/api/courses/${courseId}`,
         { enrolledUsers: selectedUsers },
         { withCredentials: true }
       );
@@ -423,7 +423,7 @@ const CourseIdPage = () => {
     try {
       const updatedUsers = enrolledUsers.filter((id) => id !== userId);
       await axios.patch(
-        `${API_URL}/api/courses/${courseId}`,
+        `/api/courses/${courseId}`,
         { enrolledUsers: updatedUsers },
         { withCredentials: true }
       );

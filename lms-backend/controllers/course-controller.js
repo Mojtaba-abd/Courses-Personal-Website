@@ -1,4 +1,6 @@
 import courseModel from "../models/course-model.js";
+import chapterModel from "../models/chapter-model.js";
+import lessonModel from "../models/lesson-model.js";
 
 export const createCourse = async (req, res) => {
   try {
@@ -99,6 +101,8 @@ export const getOneCourse = async (req, res) => {
     }
 
     const isAdmin = req.user && req.user.role === "admin";
+    const isTeacher = req.user && (req.user.role === "teacher" || req.user.role === "admin");
+    const userId = req.user?.userId;
 
     // If not admin, check if user is enrolled and course is published
     if (!isAdmin) {
@@ -106,8 +110,13 @@ export const getOneCourse = async (req, res) => {
         return res.status(404).json({ error: "Course not found" });
       }
       // Check enrollment if userId is provided
-      if (req.user && req.user.userId) {
-        if (!course.enrolledUsers.includes(req.user.userId)) {
+      if (userId) {
+        // Convert all enrolled user IDs to strings for comparison
+        const enrolledUserIds = course.enrolledUsers.map((id) => id.toString());
+        const userIdStr = userId.toString();
+        const isEnrolled = enrolledUserIds.includes(userIdStr);
+        
+        if (!isEnrolled && !isTeacher) {
           return res.status(403).json({ error: "You are not enrolled in this course" });
         }
       }
@@ -116,6 +125,93 @@ export const getOneCourse = async (req, res) => {
     // Convert enrolledUsers array to strings for frontend
     const courseData = course.toObject();
     courseData.enrolledUsers = courseData.enrolledUsers.map((id) => id.toString());
+
+    // Populate chapters and lessons for enrolled users, teachers, and admins
+    const enrolledUserIds = course.enrolledUsers.map((id) => id.toString());
+    const userIdStr = userId ? userId.toString() : null;
+    const isEnrolled = userIdStr && enrolledUserIds.includes(userIdStr);
+    
+    const shouldPopulateContent = isAdmin || isTeacher || isEnrolled;
+
+    console.log("Course population check:", {
+      courseId,
+      userId: userIdStr,
+      isAdmin,
+      isTeacher,
+      isEnrolled,
+      enrolledUsers: enrolledUserIds,
+      shouldPopulateContent
+    });
+
+    if (shouldPopulateContent) {
+      try {
+        // Fetch chapters for this course
+        // For enrolled users/teachers/admins, show all chapters (not just published)
+        // courseId in chapter model is stored as String, so convert to string
+        const courseIdStr = courseId.toString();
+        
+        // Debug: Check if any chapters exist with different courseId formats
+        const chaptersByString = await chapterModel.find({ courseId: courseIdStr });
+        const chaptersByObjectId = await chapterModel.find({ courseId: course._id.toString() });
+        const allChaptersTest = await chapterModel.find({});
+        
+        console.log(`Debug - Chapters by string courseId (${courseIdStr}): ${chaptersByString.length}`);
+        console.log(`Debug - Chapters by ObjectId courseId (${course._id.toString()}): ${chaptersByObjectId.length}`);
+        console.log(`Debug - Total chapters in DB: ${allChaptersTest.length}`);
+        if (allChaptersTest.length > 0) {
+          console.log(`Debug - Sample chapter courseId: ${allChaptersTest[0].courseId}, type: ${typeof allChaptersTest[0].courseId}`);
+        }
+        
+        // Try both string and ObjectId formats
+        const allChapters = await chapterModel
+          .find({ 
+            $or: [
+              { courseId: courseIdStr },
+              { courseId: course._id.toString() }
+            ]
+          })
+          .sort({ position: 1 });
+        
+        console.log(`Found ${allChapters.length} total chapters (published + unpublished) for course ${courseIdStr}`);
+        
+        // For enrolled users, show all chapters. For public, only show published.
+        // Since this is an enrolled user/admin/teacher, show all chapters
+        const chapters = allChapters;
+
+        console.log(`Using ${chapters.length} chapters for course ${courseIdStr}`);
+
+        // Fetch lessons for each chapter
+        const chaptersWithLessons = await Promise.all(
+          chapters.map(async (chapter) => {
+            const chapterIdStr = chapter._id.toString();
+            const lessons = await lessonModel
+              .find({ 
+                chapterId: chapterIdStr
+              })
+              .sort({ position: 1 });
+
+            console.log(`Chapter ${chapter.title} (${chapterIdStr}): Found ${lessons.length} lessons`);
+
+            return {
+              ...chapter.toObject(),
+              lessons: lessons.map((lesson) => lesson.toObject()),
+            };
+          })
+        );
+
+        // Attach chapters with lessons to course data
+        courseData.chapters = chaptersWithLessons;
+        console.log(`Populated ${chaptersWithLessons.length} chapters with ${chaptersWithLessons.reduce((sum, ch) => sum + (ch.lessons?.length || 0), 0)} total lessons`);
+      } catch (populateError) {
+        console.error("Error populating chapters and lessons:", populateError);
+        // Don't fail the request if population fails, just return course without chapters
+        courseData.chapters = [];
+      }
+    } else {
+      // For non-enrolled users, don't include chapters/lessons
+      console.log("Not populating content - user not enrolled/admin/teacher");
+      courseData.chapters = [];
+    }
 
     res.status(200).json(courseData);
   } catch (error) {
@@ -129,9 +225,33 @@ export const updateCourse = async (req, res) => {
     const { courseId } = req.params;
     const { title, description, instructor, price, imageUrl, featuredImage, category, categoryId, duration, level, published, isPublished, enrolledUsers } = req.body;
 
+    console.log("Update course request:", {
+      courseId,
+      user: req.user ? { userId: req.user.userId, role: req.user.role } : "No user",
+      body: { ...req.body, enrolledUsers: Array.isArray(enrolledUsers) ? `${enrolledUsers.length} users` : enrolledUsers }
+    });
+
     const course = await courseModel.findById(courseId);
     if (!course) {
+      console.error("Course not found:", courseId);
       return res.status(404).json({ error: "Course not found" });
+    }
+
+    // Check ownership: teachers can only update their own courses, admins can update any
+    const isAdmin = req.user && req.user.role === "admin";
+    const isTeacher = req.user && req.user.role === "teacher";
+    const userId = req.user?.userId;
+
+    console.log("Ownership check:", {
+      isAdmin,
+      isTeacher,
+      userId,
+      courseUserId: course.userId,
+      canUpdate: isAdmin || (isTeacher && course.userId === userId)
+    });
+
+    if (isTeacher && course.userId !== userId) {
+      return res.status(403).json({ error: "Forbidden - You can only update your own courses" });
     }
 
     // Update fields
@@ -153,26 +273,47 @@ export const updateCourse = async (req, res) => {
       course.isPublished = published;
     }
     if (enrolledUsers !== undefined) {
-      course.enrolledUsers = Array.isArray(enrolledUsers) ? enrolledUsers : [];
+      // Ensure enrolledUsers is an array of strings
+      if (Array.isArray(enrolledUsers)) {
+        course.enrolledUsers = enrolledUsers.map(id => String(id)).filter(id => id && id.trim() !== "");
+      } else {
+        course.enrolledUsers = [];
+      }
+      console.log("Updated enrolledUsers:", course.enrolledUsers);
     }
 
     await course.save();
+    console.log("Course updated successfully");
     res.status(200).json(course);
   } catch (error) {
     console.error("Update course error:", error);
-    return res.status(500).json({ error: error.message || "Failed to update course" });
+    console.error("Error stack:", error.stack);
+    return res.status(500).json({ 
+      error: error.message || "Failed to update course",
+      details: process.env.NODE_ENV === "development" ? error.stack : undefined
+    });
   }
 };
 
 export const deleteCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const course = await courseModel.findByIdAndDelete(courseId);
+    const course = await courseModel.findById(courseId);
 
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
     }
 
+    // Check ownership: teachers can only delete their own courses, admins can delete any
+    const isAdmin = req.user && req.user.role === "admin";
+    const isTeacher = req.user && req.user.role === "teacher";
+    const userId = req.user?.userId;
+
+    if (isTeacher && course.userId !== userId) {
+      return res.status(403).json({ error: "Forbidden - You can only delete your own courses" });
+    }
+
+    await courseModel.findByIdAndDelete(courseId);
     res.status(200).json({ message: "Course deleted successfully" });
   } catch (error) {
     console.error("Delete course error:", error);

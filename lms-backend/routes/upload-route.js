@@ -1,6 +1,6 @@
 import Express from "express";
 import { upload, uploadFile, uploadImage } from "../controllers/upload-controller.js";
-import { authenticate, requireAdmin } from "../middleware/auth-middleware.js";
+import { authenticate, requireAdmin, requireTeacherOrAdmin } from "../middleware/auth-middleware.js";
 
 const uploadRouter = Express.Router();
 
@@ -8,16 +8,16 @@ const uploadRouter = Express.Router();
 uploadRouter.post(
   "/file",
   authenticate,
-  requireAdmin,
+  requireTeacherOrAdmin,
   upload.single("file"),
   uploadFile
 );
 
-// Image upload (for rich text editor)
+// Image upload (for rich text editor, course images, featured images)
 uploadRouter.post(
   "/image",
   authenticate,
-  requireAdmin,
+  requireTeacherOrAdmin,
   upload.single("image"),
   uploadImage
 );

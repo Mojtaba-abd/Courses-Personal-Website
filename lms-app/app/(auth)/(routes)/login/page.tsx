@@ -26,8 +26,8 @@ const LoginPage = () => {
       try {
         const user = await getCurrentUser();
         if (user) {
-          // User is already logged in, redirect to dashboard
-          const redirect = searchParams.get("redirect") || "/dashboard";
+          // User is already logged in, redirect based on role
+          const redirect = searchParams.get("redirect") || (user.role === "admin" ? "/dashboard" : "/");
           router.replace(redirect);
         }
       } catch (error) {
@@ -54,9 +54,10 @@ const LoginPage = () => {
       if (response.data.user) {
         toast.success("Login successful!");
         
-        // Wait a moment for toast to show, then redirect
+        // Wait a moment for toast to show, then redirect based on role
         setTimeout(() => {
-          const redirect = searchParams.get("redirect") || "/dashboard";
+          const user = response.data.user;
+          const redirect = searchParams.get("redirect") || (user.role === "admin" ? "/dashboard" : "/");
           router.replace(redirect);
         }, 500);
       }

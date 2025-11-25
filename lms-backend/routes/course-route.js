@@ -12,7 +12,7 @@ import {
   purchaseCourse,
   getPurchasedCourses,
 } from "../controllers/course-controller.js";
-import { authenticate, requireAdmin, optionalAuth } from "../middleware/auth-middleware.js";
+import { authenticate, requireAdmin, requireTeacherOrAdmin, optionalAuth } from "../middleware/auth-middleware.js";
 
 const courseRouter = Express.Router();
 
@@ -26,8 +26,8 @@ courseRouter.get("/user/:userId/purchased", getPurchasedCourses);
 
 // Authenticated routes (teachers and admins can create courses)
 courseRouter.post("/", authenticate, createCourse);
-courseRouter.put("/:courseId", authenticate, requireAdmin, updateCourse);
-courseRouter.delete("/:courseId", authenticate, requireAdmin, deleteCourse);
+courseRouter.put("/:courseId", authenticate, requireTeacherOrAdmin, updateCourse);
+courseRouter.delete("/:courseId", authenticate, requireTeacherOrAdmin, deleteCourse);
 
 // Existing routes (for backward compatibility)
 courseRouter.post("/:courseId/attachments", authenticate, addAttachments);

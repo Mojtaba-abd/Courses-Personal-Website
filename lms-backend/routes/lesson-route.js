@@ -7,7 +7,7 @@ import {
   deleteLesson,
   reorderLessons,
 } from "../controllers/lesson-controller.js";
-import { authenticate, requireAdmin } from "../middleware/auth-middleware.js";
+import { authenticate, requireAdmin, requireTeacherOrAdmin } from "../middleware/auth-middleware.js";
 
 const lessonRouter = Express.Router();
 
@@ -15,11 +15,11 @@ const lessonRouter = Express.Router();
 lessonRouter.get("/chapter/:chapterId", getAllLessons);
 lessonRouter.get("/:lessonId/chapter/:chapterId", getOneLesson);
 
-// Admin-only routes
-lessonRouter.post("/", authenticate, requireAdmin, createLesson);
-lessonRouter.put("/:lessonId/chapter/:chapterId", authenticate, requireAdmin, updateLesson);
-lessonRouter.delete("/:lessonId/chapter/:chapterId", authenticate, requireAdmin, deleteLesson);
-lessonRouter.patch("/:lessonId/reorder", authenticate, requireAdmin, reorderLessons);
+// Teacher and Admin routes
+lessonRouter.post("/", authenticate, requireTeacherOrAdmin, createLesson);
+lessonRouter.put("/:lessonId/chapter/:chapterId", authenticate, requireTeacherOrAdmin, updateLesson);
+lessonRouter.delete("/:lessonId/chapter/:chapterId", authenticate, requireTeacherOrAdmin, deleteLesson);
+lessonRouter.patch("/:lessonId/reorder", authenticate, requireTeacherOrAdmin, reorderLessons);
 
 export default lessonRouter;
 

@@ -13,6 +13,12 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import Image from "next/image";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface Lesson {
   _id: string;
@@ -61,6 +67,140 @@ const LessonPage = () => {
   const [allLessons, setAllLessons] = useState<Lesson[]>([]);
   const [chaptersWithLessons, setChaptersWithLessons] = useState<Array<{ chapter: Chapter; lessons: Lesson[] }>>([]);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
+  const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
+
+  // Video protection - disable right-click and shortcuts (must be before any conditional returns)
+  useEffect(() => {
+    const disableRightClick = (e: MouseEvent) => e.preventDefault();
+    const disableShortcuts = (e: KeyboardEvent) => {
+      // Disable F12, Ctrl+U, Ctrl+S, Ctrl+C, Ctrl+Shift+I, Ctrl+P, Ctrl+A, etc.
+      if (
+        e.key === "F12" ||
+        e.key === "F5" ||
+        (e.ctrlKey &&
+          (e.key === "u" ||
+            e.key === "s" ||
+            e.key === "c" ||
+            e.key === "p" ||
+            e.key === "a" ||
+            e.key === "i" ||
+            (e.shiftKey && e.key === "I"))) ||
+        (e.metaKey && (e.key === "u" || e.key === "s" || e.key === "c"))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    // Disable text selection
+    document.addEventListener("selectstart", (e) => e.preventDefault());
+    document.addEventListener("contextmenu", disableRightClick);
+    document.addEventListener("keydown", disableShortcuts);
+
+    return () => {
+      document.removeEventListener("selectstart", (e) => e.preventDefault());
+      document.removeEventListener("contextmenu", disableRightClick);
+      document.removeEventListener("keydown", disableShortcuts);
+    };
+  }, []);
+
+  // YouTube Player API setup (must be before conditional returns)
+  useEffect(() => {
+    if (!lesson || !lesson.videoUrl) return;
+    
+    const videoId = getYouTubeVideoId(lesson.videoUrl);
+    if (!videoId) return;
+
+    let playerInstance: any = null;
+
+    const initializePlayer = () => {
+      if (!videoId) return;
+
+      // Destroy existing player if any
+      if (playerInstance) {
+        try {
+          playerInstance.destroy();
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+
+      try {
+        const player = new (window as any).YT.Player("youtube-player", {
+          videoId: videoId,
+          playerVars: {
+            rel: 0, // Don't show related videos
+            modestbranding: 1, // Remove YouTube logo
+            controls: 1, // Show controls
+            disablekb: 1, // Disable keyboard controls
+            fs: 0, // Disable fullscreen
+            iv_load_policy: 3, // Hide annotations
+            playsinline: 1,
+            enablejsapi: 1,
+          },
+          events: {
+            onReady: (event: any) => {
+              // Add watermark
+              const iframe = event.target.getIframe();
+              if (iframe && iframe.parentNode) {
+                // Remove existing watermark if any
+                const existingWatermark = iframe.parentNode.querySelector(".youtube-watermark");
+                if (existingWatermark) {
+                  existingWatermark.remove();
+                }
+
+                const watermark = document.createElement("div");
+                watermark.className = "youtube-watermark";
+                watermark.innerText = "محتوى حصري - ممنوع المشاركة";
+                watermark.style.cssText =
+                  "position:absolute;top:10px;right:10px;color:white;background:rgba(0,0,0,0.7);padding:8px 12px;border-radius:8px;font-size:14px;z-index:10;pointer-events:none;font-weight:bold;";
+                iframe.parentNode.appendChild(watermark);
+              }
+            },
+          },
+        });
+        playerInstance = player;
+        setYoutubePlayer(player);
+      } catch (error) {
+        console.error("Error initializing YouTube player:", error);
+      }
+    };
+
+    // Check if YouTube API is already loaded
+    if ((window as any).YT && (window as any).YT.Player) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        initializePlayer();
+      }, 100);
+    } else {
+      // Load YouTube Iframe API
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      if (firstScriptTag.parentNode) {
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      }
+
+      // Set callback when API is ready
+      (window as any).onYouTubeIframeAPIReady = () => {
+        setTimeout(() => {
+          initializePlayer();
+        }, 100);
+      };
+    }
+
+    return () => {
+      // Cleanup
+      if (playerInstance) {
+        try {
+          playerInstance.destroy();
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+    };
+  }, [lesson?.videoUrl]);
 
   useEffect(() => {
     if (!authLoading) {
@@ -104,35 +244,60 @@ const LessonPage = () => {
       const lessonRes = await axios.get(`${API_URL}/api/lessons/${lessonId}/chapter/${chapterId}`);
       setLesson(lessonRes.data);
 
-      // Fetch all chapters and lessons for navigation
-      const chaptersRes = await axios.get(`${API_URL}/api/chapters/${courseId}/published`);
-      const chaptersData = chaptersRes.data.sort((a: Chapter, b: Chapter) => a.position - b.position);
-      setAllChapters(chaptersData);
+      // Use populated chapters from course data if available, otherwise fetch separately
+      let chaptersData: Chapter[] = [];
+      let chaptersWithLessonsData: Array<{ chapter: Chapter; lessons: Lesson[] }> = [];
 
-      const chaptersWithLessons = await Promise.all(
-        chaptersData.map(async (ch: Chapter) => {
-          try {
-            const lessonsRes = await axios.get(`${API_URL}/api/lessons/chapter/${ch._id}`);
-            const sortedLessons = (lessonsRes.data || []).sort((a: Lesson, b: Lesson) => a.position - b.position);
-            return {
-              chapter: ch,
-              lessons: sortedLessons,
-            };
-          } catch {
-            return { chapter: ch, lessons: [] };
-          }
-        })
-      );
+      if (courseData.chapters && courseData.chapters.length > 0) {
+        // Use populated chapters from backend
+        chaptersData = courseData.chapters.map((ch: any) => ({
+          _id: ch._id,
+          title: ch.title,
+          position: ch.position || 0,
+          courseId: ch.courseId || courseId,
+        }));
+        chaptersWithLessonsData = courseData.chapters.map((ch: any) => ({
+          chapter: {
+            _id: ch._id,
+            title: ch.title,
+            position: ch.position || 0,
+            courseId: ch.courseId || courseId,
+          },
+          lessons: (ch.lessons || []).sort((a: Lesson, b: Lesson) => (a.position || 0) - (b.position || 0)),
+        }));
+      } else {
+        // Fallback: fetch chapters separately (for enrolled users, get all chapters, not just published)
+        const chaptersRes = await axios.get(`${API_URL}/api/chapters/${courseId}`);
+        chaptersData = (chaptersRes.data || []).sort((a: Chapter, b: Chapter) => (a.position || 0) - (b.position || 0));
+
+        chaptersWithLessonsData = await Promise.all(
+          chaptersData.map(async (ch: Chapter) => {
+            try {
+              const lessonsRes = await axios.get(`${API_URL}/api/lessons/chapter/${ch._id}`);
+              const sortedLessons = (lessonsRes.data || []).sort((a: Lesson, b: Lesson) => (a.position || 0) - (b.position || 0));
+              return {
+                chapter: ch,
+                lessons: sortedLessons,
+              };
+            } catch {
+              return { chapter: ch, lessons: [] };
+            }
+          })
+        );
+      }
+
+      setAllChapters(chaptersData);
 
       // Flatten to get all lessons with their chapter info
       const lessonsList: Array<{ lesson: Lesson; chapter: Chapter }> = [];
-      chaptersWithLessons.forEach(({ chapter: ch, lessons }) => {
+      chaptersWithLessonsData.forEach(({ chapter: ch, lessons }) => {
         lessons.forEach((l: Lesson) => {
           lessonsList.push({ lesson: l, chapter: ch });
         });
       });
 
       setAllLessons(lessonsList.map((item) => item.lesson));
+      setChaptersWithLessons(chaptersWithLessonsData);
 
       // Find current lesson index
       const index = lessonsList.findIndex((item) => item.lesson._id === lessonId);
@@ -146,12 +311,19 @@ const LessonPage = () => {
     }
   };
 
-  const getYouTubeEmbedUrl = (url: string) => {
-    if (!url) return "";
+  // Extract YouTube video ID from URL
+  const getYouTubeVideoId = (url: string): string | null => {
+    if (!url) return null;
+    // Try extracting from ?v= parameter
+    const vParamMatch = url.split("v=")[1]?.split("&")[0];
+    if (vParamMatch && vParamMatch.length === 11) return vParamMatch;
+    // Try extracting from URL path
+    const pathMatch = url.split("/").pop();
+    if (pathMatch && pathMatch.length === 11) return pathMatch;
+    // Fallback to regex
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
-    const videoId = match && match[2].length === 11 ? match[2] : null;
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+    return match && match[2] && match[2].length === 11 ? match[2] : null;
   };
 
   const navigateToLesson = async (index: number) => {
@@ -195,7 +367,17 @@ const LessonPage = () => {
     );
   }
 
-  const videoEmbedUrl = getYouTubeEmbedUrl(lesson.videoUrl);
+  // Declare YouTube API types
+  declare global {
+    interface Window {
+      YT: any;
+      onYouTubeIframeAPIReady: () => void;
+    }
+  }
+
+  // Extract videoId from lesson (after conditional checks, before JSX)
+  const videoUrl = lesson?.videoUrl || "";
+  const videoId = videoUrl ? getYouTubeVideoId(videoUrl) : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -240,15 +422,23 @@ const LessonPage = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Video */}
-                {videoEmbedUrl && (
-                  <div className="aspect-video w-full rounded-lg overflow-hidden bg-black">
-                    <iframe
-                      src={videoEmbedUrl}
-                      title={lesson.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-full"
-                    />
+                {!videoId ? (
+                  <div className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
+                    <p className="text-gray-500">لا يوجد فيديو لهذا الدرس</p>
+                  </div>
+                ) : (
+                  <div
+                    className="relative aspect-video w-full rounded-lg overflow-hidden bg-black select-none"
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}
+                    onDragStart={(e) => e.preventDefault()}
+                    onSelectStart={(e) => e.preventDefault()}
+                    style={{ userSelect: "none", WebkitUserSelect: "none" }}
+                  >
+                    <div id="youtube-player" className="w-full h-full" />
                   </div>
                 )}
 
@@ -324,36 +514,58 @@ const LessonPage = () => {
             </div>
           </div>
 
-          {/* Sidebar - Lesson List */}
+          {/* Sidebar - Course Content */}
           <div className="lg:col-span-1">
             <Card className="sticky top-4">
               <CardHeader>
-                <CardTitle className="text-base">Lessons</CardTitle>
+                <CardTitle className="text-base">Course Content</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                  {allChapters.map((ch) => {
-                    // Get lessons for this chapter by fetching them
-                    const [chapterLessons, setChapterLessons] = useState<Lesson[]>([]);
-                    
-                    useEffect(() => {
-                      axios.get(`${API_URL}/api/lessons/chapter/${ch._id}`)
-                        .then((res) => {
-                          const sorted = (res.data || []).sort((a: Lesson, b: Lesson) => a.position - b.position);
-                          setChapterLessons(sorted);
-                        })
-                        .catch(() => setChapterLessons([]));
-                    }, [ch._id]);
-
-                    return (
-                      <ChapterLessonsList
-                        key={ch._id}
-                        chapter={ch}
-                        courseId={courseId}
-                        currentLessonId={lessonId}
-                      />
-                    );
-                  })}
+                <div className="max-h-[600px] overflow-y-auto">
+                  {chaptersWithLessons.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No chapters available
+                    </p>
+                  ) : (
+                    <Accordion type="multiple" className="w-full" defaultValue={[chapterId]}>
+                      {chaptersWithLessons.map(({ chapter: ch, lessons }) => (
+                      <AccordionItem key={ch._id} value={ch._id}>
+                        <AccordionTrigger className="hover:no-underline text-left">
+                          <div className="flex flex-col items-start gap-1">
+                            <span className="font-medium text-sm">{ch.title}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {lessons.length} {lessons.length === 1 ? "lesson" : "lessons"}
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-1 pt-2">
+                            {lessons.map((l) => {
+                              const isActive = l._id === lessonId;
+                              return (
+                                <Link
+                                  key={l._id}
+                                  href={`/courses/${courseId}/chapters/${ch._id}/lessons/${l._id}`}
+                                  className={`flex items-center gap-2 p-2 rounded text-sm transition-colors ${
+                                    isActive
+                                      ? "bg-primary text-primary-foreground font-medium"
+                                      : "hover:bg-muted"
+                                  }`}
+                                >
+                                  <Play className="h-3 w-3 flex-shrink-0" />
+                                  <span className="truncate flex-1">{l.title}</span>
+                                  {!l.isFree && (
+                                    <Lock className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
+                                  )}
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                      ))}
+                    </Accordion>
+                  )}
                 </div>
               </CardContent>
             </Card>
