@@ -1,4 +1,6 @@
 import certificateModel from "../models/certificate-model.js";
+import fs from "fs";
+import path from "path";
 
 export const getAllCertificates = async (req, res) => {
   try {
@@ -64,11 +66,46 @@ export const updateCertificate = async (req, res) => {
 export const deleteCertificate = async (req, res) => {
   try {
     const { certificateId } = req.params;
-    const certificate = await certificateModel.findByIdAndDelete(certificateId);
+    
+    // Get certificate first to access imageUrl before deleting
+    const certificate = await certificateModel.findById(certificateId);
 
     if (!certificate) {
       return res.status(404).json({ error: "Certificate not found" });
     }
+
+    // Delete the image file if it exists
+    if (certificate.imageUrl) {
+      try {
+        // Extract filename from imageUrl (could be full URL or relative path)
+        // Examples: "http://localhost:8000/uploads/filename.jpg" or "/uploads/filename.jpg"
+        let filename = certificate.imageUrl;
+        
+        // If it's a full URL, extract just the path part
+        if (filename.includes("/uploads/")) {
+          filename = filename.split("/uploads/")[1];
+        } else if (filename.startsWith("/uploads/")) {
+          filename = filename.replace("/uploads/", "");
+        }
+
+        if (filename) {
+          const uploadsDir = path.join(process.cwd(), "public", "uploads");
+          const filePath = path.join(uploadsDir, filename);
+          
+          // Check if file exists and delete it
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`Deleted certificate image file: ${filename}`);
+          }
+        }
+      } catch (fileError) {
+        // Log error but don't fail the delete operation
+        console.error("Error deleting certificate image file:", fileError);
+      }
+    }
+
+    // Delete certificate from database
+    await certificateModel.findByIdAndDelete(certificateId);
 
     res.status(200).json({ message: "Certificate deleted successfully" });
   } catch (error) {
