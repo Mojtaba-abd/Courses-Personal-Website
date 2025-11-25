@@ -1,6 +1,6 @@
 "use client"
 
-import {Compass, Layout,List} from "lucide-react"
+import {Compass, Layout,List, Users} from "lucide-react"
 import SidebarItem from "./sidebar-item";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
@@ -26,12 +26,27 @@ const teacherRoutes = [
     }
 ]
 
+const adminRoutes = [
+    {
+        icon: Users,
+        label: "Users",
+        href: "/dashboard/users"
+    }
+]
+
 const SidebarRoutes = () => {
     const pathname = usePathname();
     const { user } = useAuth();
 
     const isTeacher = user?.role === "teacher" || user?.role === "admin";
-    const routes = isTeacher ? teacherRoutes : guestRoutes;
+    const isAdmin = user?.role === "admin";
+    
+    let routes = isTeacher ? teacherRoutes : guestRoutes;
+    
+    // Add admin routes if user is admin
+    if (isAdmin) {
+        routes = [...routes, ...adminRoutes];
+    }
 
 
 

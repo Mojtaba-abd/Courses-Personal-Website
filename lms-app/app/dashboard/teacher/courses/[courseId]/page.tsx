@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import axios from "axios";
-import { Loader2, Plus, ChevronDown, ChevronUp, Edit2, Trash2, GripVertical } from "lucide-react";
+import { Loader2, Plus, ChevronDown, ChevronUp, Edit2, Trash2, GripVertical, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -56,6 +56,11 @@ const CourseIdPage = () => {
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [selectedChapterId, setSelectedChapterId] = useState<string>("");
   const [youtubeThumbnail, setYoutubeThumbnail] = useState<string>("");
+  const [enrolledUsers, setEnrolledUsers] = useState<string[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [userSearchQuery, setUserSearchQuery] = useState<string>("");
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [enrollmentDialogOpen, setEnrollmentDialogOpen] = useState(false);
 
   const courseId = params.courseId as string;
   const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
@@ -77,6 +82,7 @@ const CourseIdPage = () => {
       ]);
 
       setCourse(courseRes.data);
+      setEnrolledUsers(courseRes.data.enrolledUsers || []);
       const chaptersData = chaptersRes.data.sort((a: Chapter, b: Chapter) => a.position - b.position);
       setChapters(chaptersData);
 
@@ -100,6 +106,27 @@ const CourseIdPage = () => {
     }
   };
 
+  const fetchUsers = async (searchQuery: string = "") => {
+    try {
+      const url = searchQuery
+        ? `${API_URL}/api/users/search?q=${encodeURIComponent(searchQuery)}`
+        : `${API_URL}/api/users`;
+      const response = await axios.get(url, { withCredentials: true });
+      const users = response.data.users || [];
+      setAllUsers(users);
+      
+      // If we have enrolled user IDs but not their details, fetch them
+      if (enrolledUsers.length > 0 && users.length > 0) {
+        const enrolledUserDetails = enrolledUsers
+          .map((userId) => users.find((u: any) => u.id === userId))
+          .filter(Boolean);
+        // Update enrolled users display with fetched details
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/");
@@ -108,6 +135,10 @@ const CourseIdPage = () => {
 
     if (user && courseId) {
       fetchCourseData();
+      // Fetch users for enrollment section
+      if (user.role === "admin") {
+        fetchUsers();
+      }
     }
   }, [user, courseId, authLoading, router]);
 
@@ -242,6 +273,59 @@ const CourseIdPage = () => {
       toast.error(error.response?.data?.error || "Failed to delete lesson");
     }
   };
+
+  const openEnrollmentDialog = () => {
+    setSelectedUsers([...enrolledUsers]);
+    setUserSearchQuery("");
+    fetchUsers();
+    setEnrollmentDialogOpen(true);
+  };
+
+  const handleEnrollmentSubmit = async () => {
+    try {
+      // Use PATCH for course update (works for authenticated users)
+      await axios.patch(
+        `${API_URL}/api/courses/${courseId}`,
+        { enrolledUsers: selectedUsers },
+        { withCredentials: true }
+      );
+      toast.success("Enrollment updated successfully");
+      setEnrollmentDialogOpen(false);
+      fetchCourseData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to update enrollment");
+    }
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const removeEnrolledUser = async (userId: string) => {
+    if (!confirm("Are you sure you want to remove this user from the course?")) {
+      return;
+    }
+    try {
+      const updatedUsers = enrolledUsers.filter((id) => id !== userId);
+      await axios.patch(
+        `${API_URL}/api/courses/${courseId}`,
+        { enrolledUsers: updatedUsers },
+        { withCredentials: true }
+      );
+      toast.success("User removed from course");
+      fetchCourseData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to remove user");
+    }
+  };
+
+  const filteredUsers = allUsers.filter(
+    (u) =>
+      u.username?.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+      u.email?.toLowerCase().includes(userSearchQuery.toLowerCase())
+  );
 
   if (authLoading || isLoading || !user) {
     return (
@@ -392,6 +476,59 @@ const CourseIdPage = () => {
         </Button>
       </div>
 
+      {/* Students Enrollment Section */}
+      <Card className="mt-8">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              <CardTitle>Enrolled Students</CardTitle>
+            </div>
+            <Button onClick={openEnrollmentDialog}>
+              <Plus className="h-4 w-4 mr-2" />
+              Manage Enrollment
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {enrolledUsers.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">
+              No students enrolled yet. Click "Manage Enrollment" to add students.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {enrolledUsers.map((userId) => {
+                const user = allUsers.find((u) => u.id === userId);
+                if (!user && allUsers.length === 0) {
+                  // Fetch user details if not loaded
+                  fetchUsers();
+                }
+                return (
+                  <div
+                    key={userId}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium">{user?.username || `User ${userId.slice(0, 8)}`}</p>
+                      {user?.email && (
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeEnrolledUser(userId)}
+                    >
+                      <X className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Chapter Dialog */}
       <Dialog open={chapterDialogOpen} onOpenChange={setChapterDialogOpen}>
         <DialogContent>
@@ -513,6 +650,68 @@ const CourseIdPage = () => {
               <Button type="submit">Save</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Enrollment Dialog */}
+      <Dialog open={enrollmentDialogOpen} onOpenChange={setEnrollmentDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Course Enrollment</DialogTitle>
+            <DialogDescription>
+              Search and select users to enroll in this course
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="user-search">Search Users</Label>
+              <Input
+                id="user-search"
+                placeholder="Search by name or email..."
+                value={userSearchQuery}
+                onChange={(e) => {
+                  setUserSearchQuery(e.target.value);
+                  fetchUsers(e.target.value);
+                }}
+              />
+            </div>
+            <div className="border rounded-lg max-h-96 overflow-y-auto">
+              {filteredUsers.length === 0 ? (
+                <div className="p-4 text-center text-muted-foreground">
+                  No users found
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {filteredUsers.map((u) => (
+                    <div
+                      key={u.id}
+                      className="flex items-center space-x-3 p-3 hover:bg-muted/50 cursor-pointer"
+                      onClick={() => toggleUserSelection(u.id)}
+                    >
+                      <Checkbox
+                        checked={selectedUsers.includes(u.id)}
+                        onCheckedChange={() => toggleUserSelection(u.id)}
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium">{u.username}</p>
+                        <p className="text-sm text-muted-foreground">{u.email}</p>
+                      </div>
+                      <span className="text-xs text-muted-foreground capitalize">{u.role}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {selectedUsers.length} user{selectedUsers.length !== 1 ? "s" : ""} selected
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setEnrollmentDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEnrollmentSubmit}>Save Enrollment</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
