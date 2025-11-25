@@ -71,25 +71,75 @@ const HomePage = () => {
 
   const fetchData = async () => {
     try {
-      const [certsRes, postsRes, coursesRes] = await Promise.all([
-        axios.get(`${API_URL}/api/certificates`).catch(() => ({ data: [] })),
-        axios.get(`${API_URL}/api/posts`).catch(() => ({ data: [] })),
-        // For public access, we need to get all courses and filter client-side
-        // since backend requires auth for non-published courses
-        axios.get(`${API_URL}/api/courses`).catch(() => ({ data: [] })),
-      ]);
+      setIsLoading(true);
+      
+      // Fetch certificates - using /api/certificates/public (no auth required)
+      const certsUrl = `${API_URL}/api/certificates/public`;
+      console.log("🔍 Fetching certificates from:", certsUrl);
+      let certsRes;
+      try {
+        certsRes = await axios.get(certsUrl, { withCredentials: false });
+        console.log("✅ Certificates response status:", certsRes.status);
+        console.log("✅ Certificates response data:", certsRes.data);
+        console.log("✅ Certificates count:", Array.isArray(certsRes.data) ? certsRes.data.length : 0);
+      } catch (err: any) {
+        console.error("❌ Error fetching certificates:");
+        console.error("  Status:", err.response?.status);
+        console.error("  Status Text:", err.response?.statusText);
+        console.error("  Data:", err.response?.data);
+        console.error("  Message:", err.message);
+        console.error("  Full error:", err);
+        certsRes = { data: [] };
+      }
+      const allCertificates = Array.isArray(certsRes.data) ? certsRes.data : [];
+      console.log("📋 Final certificates array:", allCertificates.length, "items");
 
-      // Filter published posts and courses
-      const publishedPosts = (postsRes.data || []).filter((p: Post) => p.isPublished || p.published).slice(0, 3);
-      const publishedCourses = (coursesRes.data || [])
-        .filter((c: Course) => (c.isPublished || c.published))
-        .slice(0, 3);
+      // Fetch posts (already working - leave as is)
+      const postsUrl = `${API_URL}/api/posts`;
+      console.log("🔍 Fetching posts from:", postsUrl);
+      let postsRes;
+      try {
+        postsRes = await axios.get(postsUrl, { withCredentials: false });
+        console.log("✅ Posts response:", postsRes.data?.length || 0, "items");
+      } catch (err: any) {
+        console.error("❌ Error fetching posts:", err.response?.status, err.response?.data || err.message);
+        postsRes = { data: [] };
+      }
+      const allPosts = (postsRes.data || []).filter((p: Post) => p.isPublished || p.published);
+      console.log("📋 Published posts:", allPosts.length);
 
-      setCertificates(certsRes.data || []);
-      setPosts(publishedPosts);
-      setCourses(publishedCourses);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+      // Fetch courses - using /api/courses/public (no auth required)
+      const coursesUrl = `${API_URL}/api/courses/public`;
+      console.log("🔍 Fetching courses from:", coursesUrl);
+      let coursesRes;
+      try {
+        coursesRes = await axios.get(coursesUrl, { withCredentials: false });
+        console.log("✅ Courses response status:", coursesRes.status);
+        console.log("✅ Courses response data:", coursesRes.data);
+        console.log("✅ Courses count:", Array.isArray(coursesRes.data) ? coursesRes.data.length : 0);
+      } catch (err: any) {
+        console.error("❌ Error fetching courses:");
+        console.error("  Status:", err.response?.status);
+        console.error("  Status Text:", err.response?.statusText);
+        console.error("  Data:", err.response?.data);
+        console.error("  Message:", err.message);
+        console.error("  Full error:", err);
+        coursesRes = { data: [] };
+      }
+      const allCourses = Array.isArray(coursesRes.data) 
+        ? coursesRes.data.filter((c: Course) => c.isPublished || c.published === true)
+        : [];
+      console.log("📋 Final courses array:", allCourses.length, "items");
+
+      setCertificates(allCertificates);
+      setPosts(allPosts.slice(0, 3));
+      setCourses(allCourses.slice(0, 3));
+      
+      console.log("✅ Final state - Certificates:", allCertificates.length, "Posts:", allPosts.slice(0, 3).length, "Courses:", allCourses.slice(0, 3).length);
+    } catch (error: any) {
+      console.error("❌ Fatal error fetching data:", error);
+      console.error("Error details:", error.response?.data || error.message);
+      toast.error("فشل تحميل البيانات. يرجى تحديث الصفحة.");
     } finally {
       setIsLoading(false);
     }
@@ -123,13 +173,7 @@ const HomePage = () => {
     return date.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  // Don't block entire page - show sections with loading states
 
   return (
     <div className="min-h-screen bg-background">
@@ -230,8 +274,12 @@ const HomePage = () => {
       <section id="certifications" className="py-16 px-4">
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">الشهادات والاعتمادات</h2>
-          {certificates.length === 0 ? (
-            <p className="text-center text-muted-foreground">لا توجد شهادات متاحة حالياً</p>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : certificates.length === 0 ? (
+            <p className="text-center text-muted-foreground">No certifications added yet</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {certificates.map((cert) => (
@@ -279,7 +327,11 @@ const HomePage = () => {
       <section id="blog" className="py-16 px-4 bg-muted/30">
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">آخر المقالات والأخبار</h2>
-          {posts.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : posts.length === 0 ? (
             <p className="text-center text-muted-foreground">لا توجد مقالات متاحة حالياً</p>
           ) : (
             <>
@@ -332,8 +384,12 @@ const HomePage = () => {
       <section id="courses" className="py-16 px-4">
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">أحدث الدورات</h2>
-          {courses.length === 0 ? (
-            <p className="text-center text-muted-foreground">لا توجد دورات متاحة حالياً</p>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : courses.length === 0 ? (
+            <p className="text-center text-muted-foreground">No published courses yet</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {courses.map((course) => (

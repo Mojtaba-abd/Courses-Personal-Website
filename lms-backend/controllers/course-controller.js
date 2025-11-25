@@ -78,6 +78,17 @@ export const getAllCourses = async (req, res) => {
   }
 };
 
+// Public route - no auth required, returns only published courses
+export const getPublishedCourses = async (req, res) => {
+  try {
+    const courses = await courseModel.find({ isPublished: true }).sort({ createdAt: -1 });
+    res.status(200).json(courses);
+  } catch (error) {
+    console.error("Get published courses error:", error);
+    return res.status(500).json({ error: error.message || "Failed to get courses" });
+  }
+};
+
 export const getOneCourse = async (req, res) => {
   try {
     const { courseId } = req.params;

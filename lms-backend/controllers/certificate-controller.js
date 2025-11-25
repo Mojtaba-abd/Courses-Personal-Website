@@ -13,6 +13,17 @@ export const getAllCertificates = async (req, res) => {
   }
 };
 
+// Public route - no auth required, returns only published certificates
+export const getPublicCertificates = async (req, res) => {
+  try {
+    const certificates = await certificateModel.find({ isPublished: true }).sort({ order: 1, createdAt: -1 });
+    res.status(200).json(certificates);
+  } catch (error) {
+    console.error("Get public certificates error:", error);
+    return res.status(500).json({ error: error.message || "Failed to get certificates" });
+  }
+};
+
 export const getOneCertificate = async (req, res) => {
   try {
     const { certificateId } = req.params;

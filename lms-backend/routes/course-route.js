@@ -2,6 +2,7 @@ import Express from "express";
 import {
   createCourse,
   getAllCourses,
+  getPublishedCourses,
   getOneCourse,
   updateCourse,
   deleteCourse,
@@ -14,6 +15,9 @@ import {
 import { authenticate, requireAdmin, optionalAuth } from "../middleware/auth-middleware.js";
 
 const courseRouter = Express.Router();
+
+// Public route - no auth required (for home page)
+courseRouter.get("/public", getPublishedCourses);
 
 // Public routes with optional auth (to check if user is admin)
 courseRouter.get("/", optionalAuth, getAllCourses);
