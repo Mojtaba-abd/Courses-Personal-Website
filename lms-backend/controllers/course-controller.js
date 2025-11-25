@@ -59,10 +59,9 @@ export const getAllCourses = async (req, res) => {
       // If userId is provided, only show courses where user is enrolled
       if (userId) {
         query.enrolledUsers = { $in: [userId] };
-      } else {
-        // If no userId provided and not admin, return empty array
-        query._id = { $in: [] };
       }
+      // If no userId provided (public access), show all published courses
+      // This allows the home page to display published courses
     } else {
       // Admin can see all courses, but if published filter is set, respect it
       if (published === "true") {
