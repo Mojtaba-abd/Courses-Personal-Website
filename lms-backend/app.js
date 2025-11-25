@@ -19,16 +19,34 @@ dotenv.config();
 
 const app = Express();
 
-app.use(Express.json());
+// Increase body size limits for JSON and URL-encoded data (50MB)
+// This is needed for rich text content and lesson data with attachments
+app.use(Express.json({ limit: "50mb" }));
+app.use(Express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
 // Enable CORS for all routes
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  // Allow requests from localhost:3000 (frontend)
-  if (origin === "http://localhost:3000") {
-    res.setHeader("Access-Control-Allow-Origin", origin);
+  // Allow requests from frontend (support multiple origins)
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    process.env.FRONTEND_URL,
+    process.env.NEXT_PUBLIC_BACK_END_URL?.replace(":8000", ":3000"),
+  ].filter(Boolean);
+  
+  // If origin matches allowed origins or contains localhost, allow it
+  if (origin) {
+    if (allowedOrigins.includes(origin) || origin.includes("localhost") || origin.includes("127.0.0.1")) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+  } else {
+    // For same-origin requests (no origin header), allow it
+    res.setHeader("Access-Control-Allow-Origin", "*");
   }
   
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
