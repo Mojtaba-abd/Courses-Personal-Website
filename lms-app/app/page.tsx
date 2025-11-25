@@ -44,6 +44,8 @@ interface Post {
   featuredImage?: string;
   publishedAt?: string;
   createdAt: string;
+  isPublished?: boolean;
+  published?: boolean;
 }
 
 interface Course {
@@ -52,6 +54,8 @@ interface Course {
   category?: string;
   featuredImage?: string;
   description?: string;
+  isPublished?: boolean;
+  published?: boolean;
 }
 
 const HomePage = () => {
@@ -413,38 +417,45 @@ const HomePage = () => {
           ) : courses.length === 0 ? (
             <p className="text-center text-muted-foreground">No published courses yet</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {courses.map((course) => (
-                <Card key={course._id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  {course.featuredImage && (
-                    <div className="relative w-full h-48 bg-muted">
-                      <Image
-                        src={course.featuredImage}
-                        alt={course.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  <CardContent className="p-6">
-                    {course.category && (
-                      <Badge variant="secondary" className="mb-2">
-                        {course.category}
-                      </Badge>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {courses.map((course) => (
+                  <Card key={course._id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    {course.featuredImage && (
+                      <div className="relative w-full h-48 bg-muted">
+                        <Image
+                          src={course.featuredImage}
+                          alt={course.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                     )}
-                    <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-                    {course.description && (
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                        {course.description}
-                      </p>
-                    )}
-                    <Link href={`/courses/${course._id}`}>
-                      <Button className="w-full">عرض التفاصيل</Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <CardContent className="p-6">
+                      {course.category && (
+                        <Badge variant="secondary" className="mb-2">
+                          {course.category}
+                        </Badge>
+                      )}
+                      <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+                      {course.description && (
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                          {course.description}
+                        </p>
+                      )}
+                      <Link href={`/courses/${course._id}`}>
+                        <Button className="w-full">عرض التفاصيل</Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <div className="text-center">
+                <Link href="/courses">
+                  <Button variant="outline">عرض جميع الدورات</Button>
+                </Link>
+              </div>
+            </>
           )}
         </div>
       </section>
