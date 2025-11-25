@@ -76,6 +76,7 @@ const HomePage = () => {
       // Fetch certificates - using /api/certificates/public (no auth required)
       const certsUrl = `${API_URL}/api/certificates/public`;
       console.log("🔍 Fetching certificates from:", certsUrl);
+      console.log("📡 API_URL:", API_URL);
       let certsRes;
       try {
         certsRes = await axios.get(certsUrl, { withCredentials: false });

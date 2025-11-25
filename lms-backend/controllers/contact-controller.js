@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { sendEmail, isEmailConfigured } from "../utils/email-service.js";
 
 export const sendContactEmail = async (req, res) => {
   try {
@@ -8,25 +8,13 @@ export const sendContactEmail = async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    const gmailUser = process.env.GMAIL_USER;
-    const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
-
-    if (!gmailUser || !gmailAppPassword) {
+    if (!isEmailConfigured()) {
       console.error("Gmail credentials not configured");
-      return res.status(500).json({ error: "Email service not configured" });
+      return res.status(500).json({ error: "Email service not configured. Please configure GMAIL_USER and GMAIL_APP_PASSWORD in your .env file" });
     }
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: gmailUser,
-        pass: gmailAppPassword,
-      },
-    });
-
-    const mailOptions = {
-      from: gmailUser,
-      to: gmailUser, // Send to yourself, or configure a different recipient
+    await sendEmail({
+      to: process.env.GMAIL_USER, // Send to yourself
       replyTo: email,
       subject: `Contact Form Submission from ${name}`,
       html: `
@@ -43,9 +31,7 @@ export const sendContactEmail = async (req, res) => {
         Email: ${email}
         Message: ${message}
       `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
 
     res.json({ message: "Message sent successfully" });
   } catch (error) {

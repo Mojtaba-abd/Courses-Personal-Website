@@ -78,6 +78,7 @@ const CourseIdPage = () => {
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [courseTitle, setCourseTitle] = useState<string>("");
   const [courseCategory, setCourseCategory] = useState<string>("");
+  const [coursePrice, setCoursePrice] = useState<number>(0);
   const [courseFeaturedImage, setCourseFeaturedImage] = useState<string>("");
   const [courseImagePreview, setCourseImagePreview] = useState<string>("");
   const [isUploadingCourseImage, setIsUploadingCourseImage] = useState(false);
@@ -107,6 +108,7 @@ const CourseIdPage = () => {
       setEnrolledUsers(courseRes.data.enrolledUsers || []);
       setCourseTitle(courseRes.data.title || "");
       setCourseCategory(courseRes.data.category || "");
+      setCoursePrice(courseRes.data.price || 0);
       setCourseFeaturedImage(courseRes.data.featuredImage || "");
       setCourseImagePreview(courseRes.data.featuredImage || "");
       setIsPublished(courseRes.data.isPublished || false);
@@ -487,6 +489,7 @@ const CourseIdPage = () => {
         {
           title: courseTitle,
           category: courseCategory,
+          price: coursePrice,
           featuredImage: courseFeaturedImage,
           isPublished: isPublished,
         },
@@ -578,6 +581,20 @@ const CourseIdPage = () => {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="course-price">Price (USD)</Label>
+            <Input
+              id="course-price"
+              type="number"
+              min="0"
+              step="0.01"
+              value={coursePrice}
+              onChange={(e) => setCoursePrice(parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
+            />
+            <p className="text-xs text-muted-foreground">Enter 0 for free course</p>
           </div>
 
           <div className="grid gap-2">

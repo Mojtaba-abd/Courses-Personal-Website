@@ -12,6 +12,7 @@ import userRouter from "./routes/user-route.js";
 import uploadRouter from "./routes/upload-route.js";
 import certificateRouter from "./routes/certificate-route.js";
 import postRouter from "./routes/post-route.js";
+import requestAccessRouter from "./routes/request-access-route.js";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -73,6 +74,7 @@ app.use("/api/users", userRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/certificates", certificateRouter);
 app.use("/api/posts", postRouter);
+app.use("/api/request-access", requestAccessRouter);
 
 // Serve uploaded files
 const __filename = fileURLToPath(import.meta.url);

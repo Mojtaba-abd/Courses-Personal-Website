@@ -89,6 +89,7 @@ const CreateCoursePage = () => {
   const { user, isLoading: authLoading } = useAuth();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
+  const [price, setPrice] = useState<number>(0);
   const [featuredImage, setFeaturedImage] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -410,7 +411,7 @@ const CreateCoursePage = () => {
       // Step 1: Create the course
       const courseResponse = await axios.post(
         `${API_URL}/api/courses`,
-        { title, category, featuredImage, enrolledUsers: selectedUsers, isPublished },
+        { title, category, featuredImage, price, enrolledUsers: selectedUsers, isPublished },
         { withCredentials: true }
       );
 
