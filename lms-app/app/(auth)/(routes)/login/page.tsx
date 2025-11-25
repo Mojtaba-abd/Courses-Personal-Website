@@ -28,7 +28,7 @@ const LoginPage = () => {
         if (user) {
           // User is already logged in, redirect to dashboard
           const redirect = searchParams.get("redirect") || "/dashboard";
-          router.push(redirect);
+          router.replace(redirect);
         }
       } catch (error) {
         // Not logged in, stay on login page
@@ -57,7 +57,7 @@ const LoginPage = () => {
         // Wait a moment for toast to show, then redirect
         setTimeout(() => {
           const redirect = searchParams.get("redirect") || "/dashboard";
-          router.push(redirect);
+          router.replace(redirect);
         }, 500);
       }
     } catch (error: any) {

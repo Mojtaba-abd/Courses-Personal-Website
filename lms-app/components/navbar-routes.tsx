@@ -20,9 +20,9 @@ const NavbarRoutes = () => {
   const pathname = usePathname();
   const { user, isLoading } = useAuth();
 
-  const isTeacherPage = pathname?.startsWith("/teacher");
-  const isCoursePage = pathname?.includes("/courses");
-  const isSearchPage = pathname === "/search";
+  const isTeacherPage = pathname?.startsWith("/dashboard/teacher");
+  const isCoursePage = pathname?.includes("/courses") && !pathname?.startsWith("/dashboard/teacher");
+  const isSearchPage = pathname === "/dashboard/courses";
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
 
   const handleLogout = async () => {
@@ -49,7 +49,7 @@ const NavbarRoutes = () => {
             </Button>
           </Link>
         ) : isTeacher ? (
-          <Link href="/teacher/courses">
+          <Link href="/dashboard/teacher/courses">
             <Button size="sm" variant={"ghost"}>
               Teacher Mode
             </Button>

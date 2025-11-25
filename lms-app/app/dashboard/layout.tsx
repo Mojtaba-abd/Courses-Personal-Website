@@ -23,12 +23,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         if (user) {
           setIsAuthenticated(true);
         } else {
-          // Not authenticated, redirect to login
-          router.push("/login");
+          // Not authenticated, redirect to root (which shows login)
+          router.push("/");
         }
       } catch (error) {
-        // Not authenticated, redirect to login
-        router.push("/login");
+        // Not authenticated, redirect to root (which shows login)
+        router.push("/");
       } finally {
         setIsCheckingAuth(false);
       }

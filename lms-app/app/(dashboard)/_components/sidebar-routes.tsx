@@ -1,19 +1,20 @@
 "use client"
 
-import {Compass, Layout,List, BarChart} from "lucide-react"
+import {Compass, Layout,List, BarChart, Users} from "lucide-react"
 import SidebarItem from "./sidebar-item";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 
 const guestRoutes = [
     {
         icon: Layout,
         label: "Dashboard",
-        href: "/"
+        href: "/dashboard"
     },
     {
         icon: Compass,
         label: "Browse",
-        href: "/search"
+        href: "/dashboard/courses"
     }
 ]
 
@@ -21,20 +22,20 @@ const teacherRoutes = [
     {
         icon: List,
         label: "Courses",
-        href: "/teacher/courses"
+        href: "/dashboard/teacher/courses"
     },
     {
         icon: BarChart,
         label: "Analytics",
-        href: "/teacher/analytics"
+        href: "/dashboard/teacher/analytics"
     }
 ]
 
 const SidebarRoutes = () => {
+    const pathname = usePathname();
+    const { user } = useAuth();
 
-    const pathname = usePathname()
-
-    const isTeacher = pathname?.includes("/teacher")
+    const isTeacher = user?.role === "teacher" || user?.role === "admin";
     const routes = isTeacher ? teacherRoutes : guestRoutes;
 
 
