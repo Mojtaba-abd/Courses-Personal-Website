@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import axios from "axios";
-import { Loader2, Plus, ChevronDown, ChevronUp, Edit2, Trash2, GripVertical, Users, X } from "lucide-react";
+import { Loader2, Plus, ChevronDown, ChevronUp, Edit2, Trash2, GripVertical, Users, X, File, Upload } from "lucide-react";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -29,16 +30,25 @@ interface Chapter {
   position: number;
 }
 
+interface LessonAttachment {
+  name: string;
+  url: string;
+  type: "pdf" | "zip" | "other";
+  size?: number;
+}
+
 interface Lesson {
   _id: string;
   title: string;
   description: string;
+  content?: string;
   videoUrl: string;
   duration: string;
   isFree: boolean;
   chapterId: string;
   courseId: string;
   position: number;
+  attachments?: LessonAttachment[];
 }
 
 const CourseIdPage = () => {
@@ -61,6 +71,9 @@ const CourseIdPage = () => {
   const [userSearchQuery, setUserSearchQuery] = useState<string>("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [enrollmentDialogOpen, setEnrollmentDialogOpen] = useState(false);
+  const [lessonContent, setLessonContent] = useState<string>("");
+  const [lessonAttachments, setLessonAttachments] = useState<LessonAttachment[]>([]);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
 
   const courseId = params.courseId as string;
   const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
@@ -163,6 +176,8 @@ const CourseIdPage = () => {
     setSelectedChapterId(chapterId);
     setEditingLesson(null);
     setYoutubeThumbnail("");
+    setLessonContent("");
+    setLessonAttachments([]);
     setLessonDialogOpen(true);
   };
 
@@ -170,6 +185,8 @@ const CourseIdPage = () => {
     setEditingLesson(lesson);
     setSelectedChapterId(lesson.chapterId);
     setYoutubeThumbnail(getYouTubeThumbnail(lesson.videoUrl));
+    setLessonContent(lesson.content || lesson.description || "");
+    setLessonAttachments(lesson.attachments || []);
     setLessonDialogOpen(true);
   };
 
@@ -204,21 +221,86 @@ const CourseIdPage = () => {
     }
   };
 
+  const handleAttachmentUpload = async (file: File) => {
+    if (!file) return;
+
+    const allowedTypes = ["application/pdf", "application/zip", "application/x-zip-compressed"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Please select a PDF or ZIP file");
+      return;
+    }
+
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("File size must be less than 50MB");
+      return;
+    }
+
+    setIsUploadingAttachment(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file); // Backend uses 'image' field name
+
+      const response = await axios.post(
+        `${API_URL}/api/upload/image`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const fileUrl = response.data.url;
+      const fileType = file.type.includes("pdf") ? "pdf" : file.type.includes("zip") ? "zip" : "other";
+      
+      const newAttachment: LessonAttachment = {
+        name: file.name,
+        url: fileUrl,
+        type: fileType,
+        size: file.size,
+      };
+
+      setLessonAttachments([...lessonAttachments, newAttachment]);
+      toast.success("File uploaded successfully");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.response?.data?.error || "Failed to upload file");
+    } finally {
+      setIsUploadingAttachment(false);
+    }
+  };
+
+  const handleRemoveAttachment = (index: number) => {
+    setLessonAttachments(lessonAttachments.filter((_, i) => i !== index));
+  };
+
   const handleLessonSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
     const videoUrl = formData.get("videoUrl") as string;
     const duration = formData.get("duration") as string;
     const isFree = formData.get("isFree") === "on";
+
+    // Use rich text content, fallback to description if empty
+    const content = lessonContent || "";
+    const description = content.substring(0, 200).replace(/<[^>]*>/g, ""); // Plain text excerpt
 
     try {
       if (editingLesson) {
         // Update lesson
         await axios.put(
           `${API_URL}/api/lessons/${editingLesson._id}/chapter/${selectedChapterId}`,
-          { title, description, videoUrl, duration, isFree },
+          { 
+            title, 
+            description, 
+            content, 
+            videoUrl, 
+            duration, 
+            isFree,
+            attachments: lessonAttachments,
+          },
           { withCredentials: true }
         );
         toast.success("Lesson updated successfully");
@@ -227,12 +309,25 @@ const CourseIdPage = () => {
         const position = lessonsByChapter[selectedChapterId]?.length || 0;
         await axios.post(
           `${API_URL}/api/lessons`,
-          { title, description, videoUrl, duration, isFree, chapterId: selectedChapterId, courseId, position },
+          { 
+            title, 
+            description, 
+            content, 
+            videoUrl, 
+            duration, 
+            isFree, 
+            chapterId: selectedChapterId, 
+            courseId, 
+            position,
+            attachments: lessonAttachments,
+          },
           { withCredentials: true }
         );
         toast.success("Lesson created successfully");
       }
       setLessonDialogOpen(false);
+      setLessonContent("");
+      setLessonAttachments([]);
       fetchCourseData();
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to save lesson");
@@ -567,7 +662,7 @@ const CourseIdPage = () => {
 
       {/* Lesson Dialog */}
       <Dialog open={lessonDialogOpen} onOpenChange={setLessonDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <form onSubmit={handleLessonSubmit}>
             <DialogHeader>
               <DialogTitle>{editingLesson ? "Edit Lesson" : "Add Lesson"}</DialogTitle>
@@ -588,16 +683,18 @@ const CourseIdPage = () => {
                   required
                 />
               </div>
+              
               <div className="grid gap-2">
-                <Label htmlFor="lesson-description">Description</Label>
-                <Textarea
-                  id="lesson-description"
-                  name="description"
-                  placeholder="Enter lesson description..."
-                  defaultValue={editingLesson?.description || ""}
-                  rows={3}
+                <Label htmlFor="lesson-content">Content (Rich Text)</Label>
+                <RichTextEditor
+                  value={lessonContent}
+                  onChange={setLessonContent}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Use the editor to add formatted text, images, and links. Images will be uploaded automatically.
+                </p>
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="lesson-videoUrl">YouTube URL</Label>
                 <Input
@@ -623,6 +720,7 @@ const CourseIdPage = () => {
                   </div>
                 )}
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="lesson-duration">Duration (minutes)</Label>
                 <Input
@@ -634,6 +732,7 @@ const CourseIdPage = () => {
                   min="0"
                 />
               </div>
+
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="lesson-isFree"
@@ -644,9 +743,72 @@ const CourseIdPage = () => {
                   Free lesson (accessible without purchase)
                 </Label>
               </div>
+
+              {/* Attachments Section */}
+              <div className="grid gap-2 border-t pt-4">
+                <Label>Attachments (PDF/ZIP)</Label>
+                <div className="flex items-center gap-2">
+                  <label
+                    htmlFor="attachment-upload"
+                    className="flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-muted transition-colors"
+                  >
+                    <Upload className="h-4 w-4" />
+                    <span className="text-sm">
+                      {isUploadingAttachment ? "Uploading..." : "Upload File"}
+                    </span>
+                  </label>
+                  <input
+                    id="attachment-upload"
+                    type="file"
+                    accept=".pdf,.zip"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleAttachmentUpload(file);
+                    }}
+                    disabled={isUploadingAttachment}
+                  />
+                </div>
+                {lessonAttachments.length > 0 && (
+                  <div className="space-y-2 mt-2">
+                    {lessonAttachments.map((attachment, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
+                        <div className="flex items-center gap-2 flex-1">
+                          <File className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{attachment.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {attachment.type.toUpperCase()} •{" "}
+                              {attachment.size ? `${(attachment.size / 1024).toFixed(1)} KB` : ""}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveAttachment(index)}
+                        >
+                          <X className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Upload PDF or ZIP files (max 50MB each). Students can download these files.
+                </p>
+              </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setLessonDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => {
+                setLessonDialogOpen(false);
+                setLessonContent("");
+                setLessonAttachments([]);
+              }}>
                 Cancel
               </Button>
               <Button type="submit">Save</Button>
