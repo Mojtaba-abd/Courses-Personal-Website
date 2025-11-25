@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { DataTable } from "@/app/(dashboard)/(routes)/teacher/courses/_components/data-table";
 import { columns } from "@/app/(dashboard)/(routes)/teacher/courses/_components/columns";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,26 +10,39 @@ import { Loader2 } from "lucide-react";
 
 const CoursesPage = () => {
   const { user, isLoading } = useAuth();
+  const router = useRouter();
   const [courses, setCourses] = useState<any[]>([]);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
+  const fetchCourses = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000"}/api/courses`,
+        { withCredentials: true }
+      );
+      setCourses(response.data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setIsLoadingCourses(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      const fetchCourses = async () => {
-        try {
-          const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000"}/api/courses`
-          );
-          setCourses(response.data);
-        } catch (error) {
-          console.error("Error fetching courses:", error);
-        } finally {
-          setIsLoadingCourses(false);
-        }
-      };
-
       fetchCourses();
     }
+  }, [user]);
+
+  // Refetch when page becomes visible (e.g., after navigation back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && user) {
+        fetchCourses();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [user]);
 
   if (isLoading || isLoadingCourses || !user) {

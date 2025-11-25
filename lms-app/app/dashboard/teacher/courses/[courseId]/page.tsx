@@ -113,15 +113,12 @@ const CourseIdPage = () => {
         : `${API_URL}/api/users`;
       const response = await axios.get(url, { withCredentials: true });
       const users = response.data.users || [];
-      setAllUsers(users);
-      
-      // If we have enrolled user IDs but not their details, fetch them
-      if (enrolledUsers.length > 0 && users.length > 0) {
-        const enrolledUserDetails = enrolledUsers
-          .map((userId) => users.find((u: any) => u.id === userId))
-          .filter(Boolean);
-        // Update enrolled users display with fetched details
-      }
+      // Normalize user IDs - handle both _id and id
+      const normalizedUsers = users.map((u: any) => ({
+        ...u,
+        id: u.id || u._id || u.id,
+      }));
+      setAllUsers(normalizedUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -298,9 +295,14 @@ const CourseIdPage = () => {
   };
 
   const toggleUserSelection = (userId: string) => {
-    setSelectedUsers((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
-    );
+    if (!userId) return;
+    setSelectedUsers((prev) => {
+      if (prev.includes(userId)) {
+        return prev.filter((id) => id !== userId);
+      } else {
+        return [...prev, userId];
+      }
+    });
   };
 
   const removeEnrolledUser = async (userId: string) => {
@@ -498,7 +500,7 @@ const CourseIdPage = () => {
           ) : (
             <div className="space-y-2">
               {enrolledUsers.map((userId) => {
-                const user = allUsers.find((u) => u.id === userId);
+                const user = allUsers.find((u) => (u.id || u._id) === userId);
                 if (!user && allUsers.length === 0) {
                   // Fetch user details if not loaded
                   fetchUsers();
@@ -682,23 +684,48 @@ const CourseIdPage = () => {
                 </div>
               ) : (
                 <div className="divide-y">
-                  {filteredUsers.map((u) => (
-                    <div
-                      key={u.id}
-                      className="flex items-center space-x-3 p-3 hover:bg-muted/50 cursor-pointer"
-                      onClick={() => toggleUserSelection(u.id)}
-                    >
-                      <Checkbox
-                        checked={selectedUsers.includes(u.id)}
-                        onCheckedChange={() => toggleUserSelection(u.id)}
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium">{u.username}</p>
-                        <p className="text-sm text-muted-foreground">{u.email}</p>
+                  {filteredUsers.map((u) => {
+                    const userId = u.id || u._id || "";
+                    const isSelected = selectedUsers.includes(userId);
+                    return (
+                      <div
+                        key={userId}
+                        className="flex items-center space-x-3 p-3 hover:bg-muted/50"
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedUsers((prev) => {
+                                if (!prev.includes(userId)) {
+                                  return [...prev, userId];
+                                }
+                                return prev;
+                              });
+                            } else {
+                              setSelectedUsers((prev) => prev.filter((id) => id !== userId));
+                            }
+                          }}
+                        />
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={() => {
+                            setSelectedUsers((prev) => {
+                              if (prev.includes(userId)) {
+                                return prev.filter((id) => id !== userId);
+                              } else {
+                                return [...prev, userId];
+                              }
+                            });
+                          }}
+                        >
+                          <p className="font-medium">{u.username}</p>
+                          <p className="text-sm text-muted-foreground">{u.email}</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground capitalize">{u.role}</span>
                       </div>
-                      <span className="text-xs text-muted-foreground capitalize">{u.role}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

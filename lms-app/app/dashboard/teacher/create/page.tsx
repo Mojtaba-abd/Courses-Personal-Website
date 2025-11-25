@@ -44,7 +44,12 @@ const CreatePage = () => {
             
             if (response.status === 201) {
                 toast.success("Course created successfully!");
-                router.push(`/dashboard/teacher/courses/${response.data._id}`);
+                // Refresh the router to update the courses list
+                router.refresh();
+                // Small delay to ensure refresh completes
+                setTimeout(() => {
+                    router.push(`/dashboard/teacher/courses/${response.data._id}`);
+                }, 100);
             } else {
                 toast.error("Failed to create course");
             }

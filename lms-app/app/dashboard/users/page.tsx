@@ -35,7 +35,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "react-hot-toast";
 
 interface User {
-  id: string;
+  id?: string;
+  _id?: string;
   username: string;
   email: string;
   role: string;
@@ -71,7 +72,12 @@ const UsersPage = () => {
       const response = await axios.get(`${API_URL}/api/users`, {
         withCredentials: true,
       });
-      setUsers(response.data.users || []);
+      // Normalize user IDs - handle both _id and id
+      const normalizedUsers = (response.data.users || []).map((u: any) => ({
+        ...u,
+        id: u.id || u._id || u.id,
+      }));
+      setUsers(normalizedUsers);
     } catch (error: any) {
       console.error("Error fetching users:", error);
       toast.error(error.response?.data?.error || "Failed to load users");
@@ -162,27 +168,30 @@ const UsersPage = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                users.map((u) => (
-                  <TableRow key={u.id}>
-                    <TableCell className="font-medium">{u.username}</TableCell>
-                    <TableCell>{u.email}</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary capitalize">
-                        {u.role}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteUser(u.id)}
-                        disabled={u.id === user?.id}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                users.map((u) => {
+                  const userId = u.id || u._id || "";
+                  return (
+                    <TableRow key={userId}>
+                      <TableCell className="font-medium">{u.username}</TableCell>
+                      <TableCell>{u.email}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary capitalize">
+                          {u.role}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteUser(userId)}
+                          disabled={!userId || userId === user?.id}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
