@@ -1,20 +1,104 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { useRouter } from "next/navigation";
 import axios from "axios";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, ChevronDown, ChevronUp, Edit2, Trash2, GripVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "react-hot-toast";
+
+interface Chapter {
+  _id: string;
+  title: string;
+  courseId: string;
+  userId: string;
+  position: number;
+}
+
+interface Lesson {
+  _id: string;
+  title: string;
+  description: string;
+  videoUrl: string;
+  duration: string;
+  isFree: boolean;
+  chapterId: string;
+  courseId: string;
+  position: number;
+}
 
 const CourseIdPage = () => {
   const params = useParams();
-  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
   const [course, setCourse] = useState<any>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [lessonsByChapter, setLessonsByChapter] = useState<Record<string, Lesson[]>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
+  const [chapterDialogOpen, setChapterDialogOpen] = useState(false);
+  const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
+  const [editingChapter, setEditingChapter] = useState<Chapter | null>(null);
+  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
+  const [selectedChapterId, setSelectedChapterId] = useState<string>("");
+  const [youtubeThumbnail, setYoutubeThumbnail] = useState<string>("");
 
   const courseId = params.courseId as string;
+  const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
+
+  // YouTube thumbnail extractor
+  const getYouTubeThumbnail = (url: string) => {
+    if (!url) return "";
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    const videoId = match && match[2].length === 11 ? match[2] : null;
+    return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : "";
+  };
+
+  const fetchCourseData = async () => {
+    try {
+      const [courseRes, chaptersRes] = await Promise.all([
+        axios.get(`${API_URL}/api/courses/${courseId}`, { withCredentials: true }),
+        axios.get(`${API_URL}/api/chapters/${courseId}`, { withCredentials: true }),
+      ]);
+
+      setCourse(courseRes.data);
+      const chaptersData = chaptersRes.data.sort((a: Chapter, b: Chapter) => a.position - b.position);
+      setChapters(chaptersData);
+
+      // Fetch lessons for each chapter
+      const lessonsPromises = chaptersData.map((chapter: Chapter) =>
+        axios.get(`${API_URL}/api/lessons/chapter/${chapter._id}`, { withCredentials: true })
+      );
+      const lessonsResponses = await Promise.all(lessonsPromises);
+      const lessonsMap: Record<string, Lesson[]> = {};
+      chaptersData.forEach((chapter: Chapter, index: number) => {
+        lessonsMap[chapter._id] = lessonsResponses[index].data.sort(
+          (a: Lesson, b: Lesson) => a.position - b.position
+        );
+      });
+      setLessonsByChapter(lessonsMap);
+    } catch (error) {
+      console.error("Error fetching course data:", error);
+      toast.error("Failed to load course data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -23,26 +107,143 @@ const CourseIdPage = () => {
     }
 
     if (user && courseId) {
-      const fetchCourse = async () => {
-        try {
-          const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
-          const response = await axios.get(
-            `${API_URL}/api/courses/${courseId}`,
-            { withCredentials: true }
-          );
-          setCourse(response.data);
-        } catch (error) {
-          console.error("Error fetching course:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      fetchCourse();
+      fetchCourseData();
     }
   }, [user, courseId, authLoading, router]);
 
-  if (authLoading || isLoading) {
+  const toggleChapter = (chapterId: string) => {
+    const newExpanded = new Set(expandedChapters);
+    if (newExpanded.has(chapterId)) {
+      newExpanded.delete(chapterId);
+    } else {
+      newExpanded.add(chapterId);
+    }
+    setExpandedChapters(newExpanded);
+  };
+
+  const openAddChapterDialog = () => {
+    setEditingChapter(null);
+    setChapterDialogOpen(true);
+  };
+
+  const openEditChapterDialog = (chapter: Chapter) => {
+    setEditingChapter(chapter);
+    setChapterDialogOpen(true);
+  };
+
+  const openAddLessonDialog = (chapterId: string) => {
+    setSelectedChapterId(chapterId);
+    setEditingLesson(null);
+    setYoutubeThumbnail("");
+    setLessonDialogOpen(true);
+  };
+
+  const openEditLessonDialog = (lesson: Lesson) => {
+    setEditingLesson(lesson);
+    setSelectedChapterId(lesson.chapterId);
+    setYoutubeThumbnail(getYouTubeThumbnail(lesson.videoUrl));
+    setLessonDialogOpen(true);
+  };
+
+  const handleChapterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const title = formData.get("title") as string;
+
+    try {
+      if (editingChapter) {
+        // Update chapter
+        await axios.patch(
+          `${API_URL}/api/chapters/${editingChapter._id}/course/${courseId}`,
+          { title, userId: user?.id },
+          { withCredentials: true }
+        );
+        toast.success("Chapter updated successfully");
+      } else {
+        // Create chapter
+        const position = chapters.length;
+        await axios.post(
+          `${API_URL}/api/chapters`,
+          { title, courseId, userId: user?.id, position },
+          { withCredentials: true }
+        );
+        toast.success("Chapter created successfully");
+      }
+      setChapterDialogOpen(false);
+      fetchCourseData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to save chapter");
+    }
+  };
+
+  const handleLessonSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const videoUrl = formData.get("videoUrl") as string;
+    const duration = formData.get("duration") as string;
+    const isFree = formData.get("isFree") === "on";
+
+    try {
+      if (editingLesson) {
+        // Update lesson
+        await axios.put(
+          `${API_URL}/api/lessons/${editingLesson._id}/chapter/${selectedChapterId}`,
+          { title, description, videoUrl, duration, isFree },
+          { withCredentials: true }
+        );
+        toast.success("Lesson updated successfully");
+      } else {
+        // Create lesson
+        const position = lessonsByChapter[selectedChapterId]?.length || 0;
+        await axios.post(
+          `${API_URL}/api/lessons`,
+          { title, description, videoUrl, duration, isFree, chapterId: selectedChapterId, courseId, position },
+          { withCredentials: true }
+        );
+        toast.success("Lesson created successfully");
+      }
+      setLessonDialogOpen(false);
+      fetchCourseData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to save lesson");
+    }
+  };
+
+  const handleDeleteChapter = async (chapterId: string) => {
+    if (!confirm("Are you sure you want to delete this chapter? All lessons will be deleted too.")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_URL}/api/chapters/${chapterId}/course/${courseId}`, {
+        withCredentials: true,
+      });
+      toast.success("Chapter deleted successfully");
+      fetchCourseData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete chapter");
+    }
+  };
+
+  const handleDeleteLesson = async (lessonId: string, chapterId: string) => {
+    if (!confirm("Are you sure you want to delete this lesson?")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_URL}/api/lessons/${lessonId}/chapter/${chapterId}`, {
+        withCredentials: true,
+      });
+      toast.success("Lesson deleted successfully");
+      fetchCourseData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete lesson");
+    }
+  };
+
+  if (authLoading || isLoading || !user) {
     return (
       <div className="p-6 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -60,21 +261,262 @@ const CourseIdPage = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4">{course.title || "Untitled Course"}</h1>
-        <div className="bg-muted rounded-lg p-6">
-          <p className="text-lg text-muted-foreground">
-            Course edit page coming soon. Course ID: {courseId}
-          </p>
-          {course.description && (
-            <p className="mt-4 text-sm">{course.description}</p>
-          )}
-        </div>
+    <div className="p-6 max-w-6xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">{course.title}</h1>
+        <p className="text-muted-foreground">Manage your course structure</p>
       </div>
+
+      {/* Chapters Accordion */}
+      <div className="space-y-4">
+        {chapters.map((chapter) => {
+          const isExpanded = expandedChapters.has(chapter._id);
+          const lessons = lessonsByChapter[chapter._id] || [];
+
+          return (
+            <Card key={chapter._id} className="overflow-hidden">
+              <CardHeader
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => toggleChapter(chapter._id)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                      {isExpanded ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <CardTitle className="text-lg">{chapter.title || "Untitled Chapter"}</CardTitle>
+                    <span className="text-sm text-muted-foreground">
+                      ({lessons.length} {lessons.length === 1 ? "lesson" : "lessons"})
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditChapterDialog(chapter);
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteChapter(chapter._id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+
+              {isExpanded && (
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    {lessons.map((lesson) => (
+                      <div
+                        key={lesson._id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <GripVertical className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex-1">
+                            <h4 className="font-medium">{lesson.title}</h4>
+                            {lesson.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-1">
+                                {lesson.description}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                              {lesson.duration && <span>Duration: {lesson.duration} min</span>}
+                              {lesson.isFree && (
+                                <span className="text-green-600 font-medium">Free</span>
+                              )}
+                            </div>
+                          </div>
+                          {lesson.videoUrl && (
+                            <img
+                              src={getYouTubeThumbnail(lesson.videoUrl)}
+                              alt="Video thumbnail"
+                              className="w-24 h-16 object-cover rounded"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditLessonDialog(lesson)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteLesson(lesson._id, lesson.chapterId)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => openAddLessonDialog(chapter._id)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Lesson
+                    </Button>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          );
+        })}
+
+        <Button variant="outline" className="w-full" onClick={openAddChapterDialog}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Chapter
+        </Button>
+      </div>
+
+      {/* Chapter Dialog */}
+      <Dialog open={chapterDialogOpen} onOpenChange={setChapterDialogOpen}>
+        <DialogContent>
+          <form onSubmit={handleChapterSubmit}>
+            <DialogHeader>
+              <DialogTitle>{editingChapter ? "Edit Chapter" : "Add Chapter"}</DialogTitle>
+              <DialogDescription>
+                {editingChapter
+                  ? "Update the chapter title"
+                  : "Enter a title for your new chapter"}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="chapter-title">Title</Label>
+                <Input
+                  id="chapter-title"
+                  name="title"
+                  placeholder="e.g., Introduction to React"
+                  defaultValue={editingChapter?.title || ""}
+                  required
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setChapterDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Save</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Lesson Dialog */}
+      <Dialog open={lessonDialogOpen} onOpenChange={setLessonDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <form onSubmit={handleLessonSubmit}>
+            <DialogHeader>
+              <DialogTitle>{editingLesson ? "Edit Lesson" : "Add Lesson"}</DialogTitle>
+              <DialogDescription>
+                {editingLesson
+                  ? "Update the lesson details"
+                  : "Fill in the details for your new lesson"}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="lesson-title">Title</Label>
+                <Input
+                  id="lesson-title"
+                  name="title"
+                  placeholder="e.g., Getting Started"
+                  defaultValue={editingLesson?.title || ""}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="lesson-description">Description</Label>
+                <Textarea
+                  id="lesson-description"
+                  name="description"
+                  placeholder="Enter lesson description..."
+                  defaultValue={editingLesson?.description || ""}
+                  rows={3}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="lesson-videoUrl">YouTube URL</Label>
+                <Input
+                  id="lesson-videoUrl"
+                  name="videoUrl"
+                  type="url"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  defaultValue={editingLesson?.videoUrl || ""}
+                  onChange={(e) => {
+                    setYoutubeThumbnail(getYouTubeThumbnail(e.target.value));
+                  }}
+                />
+                {youtubeThumbnail && (
+                  <div className="mt-2">
+                    <img
+                      src={youtubeThumbnail}
+                      alt="Video thumbnail"
+                      className="w-full h-48 object-cover rounded border"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="lesson-duration">Duration (minutes)</Label>
+                <Input
+                  id="lesson-duration"
+                  name="duration"
+                  type="number"
+                  placeholder="e.g., 15"
+                  defaultValue={editingLesson?.duration || ""}
+                  min="0"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="lesson-isFree"
+                  name="isFree"
+                  defaultChecked={editingLesson?.isFree || false}
+                />
+                <Label htmlFor="lesson-isFree" className="cursor-pointer">
+                  Free lesson (accessible without purchase)
+                </Label>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setLessonDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Save</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default CourseIdPage;
-
