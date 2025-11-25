@@ -2,7 +2,7 @@ import courseModel from "../models/course-model.js";
 
 export const createCourse = async (req, res) => {
   try {
-    const { title, description, imageUrl } = req.body;
+    const { title, description, imageUrl, featuredImage, category, isPublished, enrolledUsers } = req.body;
     
     // Validate required fields
     if (!title || !title.trim()) {
@@ -15,7 +15,6 @@ export const createCourse = async (req, res) => {
       return res.status(401).json({ error: "User not authenticated" });
     }
     
-    const { featuredImage, category } = req.body;
     const course = await courseModel.create({
       title: title.trim(),
       description: description || "",
@@ -24,9 +23,9 @@ export const createCourse = async (req, res) => {
       category: category || "",
       userId: userId,
       price: 0,
-      published: false,
-      isPublished: false,
-      enrolledUsers: [],
+      published: isPublished || false,
+      isPublished: isPublished || false,
+      enrolledUsers: enrolledUsers || [],
       attachments: [],
       purchased: {},
     });
@@ -118,7 +117,7 @@ export const getOneCourse = async (req, res) => {
 export const updateCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { title, description, instructor, price, imageUrl, featuredImage, category, categoryId, duration, level, published, enrolledUsers } = req.body;
+    const { title, description, instructor, price, imageUrl, featuredImage, category, categoryId, duration, level, published, isPublished, enrolledUsers } = req.body;
 
     const course = await courseModel.findById(courseId);
     if (!course) {
@@ -136,7 +135,10 @@ export const updateCourse = async (req, res) => {
     if (categoryId !== undefined) course.categoryId = categoryId;
     if (duration !== undefined) course.duration = duration;
     if (level !== undefined) course.level = level;
-    if (published !== undefined) {
+    if (isPublished !== undefined) {
+      course.isPublished = isPublished;
+      course.published = isPublished;
+    } else if (published !== undefined) {
       course.published = published;
       course.isPublished = published;
     }

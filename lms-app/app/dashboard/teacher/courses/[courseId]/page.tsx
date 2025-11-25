@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import axios from "axios";
-import { Loader2, Plus, ChevronDown, ChevronUp, Edit2, Trash2, GripVertical, Users, X, File, Upload } from "lucide-react";
+import { Loader2, Plus, ChevronDown, ChevronUp, Edit2, Trash2, GripVertical, Users, X, File, Upload, ImageIcon, Save } from "lucide-react";
 import { RichTextEditor } from "@/components/rich-text-editor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +20,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "react-hot-toast";
+import Image from "next/image";
 
 interface Chapter {
   _id: string;
@@ -74,6 +76,13 @@ const CourseIdPage = () => {
   const [lessonContent, setLessonContent] = useState<string>("");
   const [lessonAttachments, setLessonAttachments] = useState<LessonAttachment[]>([]);
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [courseTitle, setCourseTitle] = useState<string>("");
+  const [courseCategory, setCourseCategory] = useState<string>("");
+  const [courseFeaturedImage, setCourseFeaturedImage] = useState<string>("");
+  const [courseImagePreview, setCourseImagePreview] = useState<string>("");
+  const [isUploadingCourseImage, setIsUploadingCourseImage] = useState(false);
+  const [isPublished, setIsPublished] = useState<boolean>(false);
+  const [isSavingCourse, setIsSavingCourse] = useState(false);
 
   const courseId = params.courseId as string;
   const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
@@ -96,6 +105,11 @@ const CourseIdPage = () => {
 
       setCourse(courseRes.data);
       setEnrolledUsers(courseRes.data.enrolledUsers || []);
+      setCourseTitle(courseRes.data.title || "");
+      setCourseCategory(courseRes.data.category || "");
+      setCourseFeaturedImage(courseRes.data.featuredImage || "");
+      setCourseImagePreview(courseRes.data.featuredImage || "");
+      setIsPublished(courseRes.data.isPublished || false);
       const chaptersData = chaptersRes.data.sort((a: Chapter, b: Chapter) => a.position - b.position);
       setChapters(chaptersData);
 
@@ -418,6 +432,90 @@ const CourseIdPage = () => {
     }
   };
 
+  const handleCourseImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image size must be less than 10MB");
+      return;
+    }
+
+    setIsUploadingCourseImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await axios.post(
+        `${API_URL}/api/upload/image`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const uploadedUrl = response.data.url;
+      setCourseFeaturedImage(uploadedUrl);
+      setCourseImagePreview(uploadedUrl);
+      toast.success("Image uploaded successfully");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.response?.data?.error || "Failed to upload image");
+    } finally {
+      setIsUploadingCourseImage(false);
+    }
+  };
+
+  const handleSaveCourse = async () => {
+    if (!courseTitle.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+
+    setIsSavingCourse(true);
+    try {
+      await axios.patch(
+        `${API_URL}/api/courses/${courseId}`,
+        {
+          title: courseTitle,
+          category: courseCategory,
+          featuredImage: courseFeaturedImage,
+          isPublished: isPublished,
+        },
+        { withCredentials: true }
+      );
+      toast.success("Course updated successfully");
+      fetchCourseData();
+    } catch (error: any) {
+      console.error("Update course error:", error);
+      toast.error(error.response?.data?.error || "Failed to update course");
+    } finally {
+      setIsSavingCourse(false);
+    }
+  };
+
+  const CATEGORIES = [
+    "Cybersecurity",
+    "Web Development",
+    "Networking",
+    "DevOps",
+    "Cloud Computing",
+    "Data Science",
+    "Machine Learning",
+    "Mobile Development",
+    "Database",
+    "Programming",
+    "Other",
+  ];
+
   const filteredUsers = allUsers.filter(
     (u) =>
       u.username?.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
@@ -444,9 +542,134 @@ const CourseIdPage = () => {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{course.title}</h1>
-        <p className="text-muted-foreground">Manage your course structure</p>
+        <h1 className="text-3xl font-bold mb-2">Edit Course</h1>
+        <p className="text-muted-foreground">Manage your course information and structure</p>
       </div>
+
+      {/* Course Information Section */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Course Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-2">
+            <Label htmlFor="course-title">Title *</Label>
+            <Input
+              id="course-title"
+              value={courseTitle}
+              onChange={(e) => setCourseTitle(e.target.value)}
+              placeholder="e.g., Next.js Full Course"
+              required
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="course-category">Category</Label>
+            <select
+              id="course-category"
+              value={courseCategory}
+              onChange={(e) => setCourseCategory(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">Select category</option>
+              {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="course-featured-image">Featured Image</Label>
+            {courseImagePreview ? (
+              <div className="relative w-full h-48 mb-2 border rounded-lg overflow-hidden">
+                <img
+                  src={courseImagePreview}
+                  alt="Featured image preview"
+                  className="w-full h-full object-cover"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={() => {
+                    setCourseFeaturedImage("");
+                    setCourseImagePreview("");
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center w-full h-48 border-2 border-dashed rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+                <label
+                  htmlFor="course-featured-image"
+                  className="flex flex-col items-center justify-center w-full h-full cursor-pointer"
+                >
+                  <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {isUploadingCourseImage ? "Uploading..." : "Click to upload or drag and drop"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    PNG, JPG, GIF up to 10MB
+                  </p>
+                </label>
+                <input
+                  id="course-featured-image"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleCourseImageUpload}
+                  disabled={isUploadingCourseImage}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div>
+              <Label htmlFor="course-publish" className="text-base font-medium">
+                Publish Course
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {isPublished
+                  ? "Course is visible to students"
+                  : "Course is in draft mode (not visible to students)"}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {isPublished ? (
+                <Badge className="bg-green-600 text-white px-3 py-1">Published</Badge>
+              ) : (
+                <Badge variant="secondary" className="px-3 py-1">Draft</Badge>
+              )}
+              <Checkbox
+                id="course-publish"
+                checked={isPublished}
+                onCheckedChange={(checked) => setIsPublished(checked === true)}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleSaveCourse} disabled={isSavingCourse || !courseTitle.trim()}>
+              {isSavingCourse ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Course Info
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Chapters Accordion */}
       <div className="space-y-4">

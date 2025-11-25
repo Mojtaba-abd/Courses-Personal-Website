@@ -108,6 +108,7 @@ const CreateCoursePage = () => {
   const [lessonContent, setLessonContent] = useState<string>("");
   const [lessonAttachments, setLessonAttachments] = useState<LessonAttachment[]>([]);
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [isPublished, setIsPublished] = useState<boolean>(false);
 
   const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
 
@@ -408,7 +409,7 @@ const CreateCoursePage = () => {
       // Step 1: Create the course
       const courseResponse = await axios.post(
         `${API_URL}/api/courses`,
-        { title, category, featuredImage, enrolledUsers: selectedUsers },
+        { title, category, featuredImage, enrolledUsers: selectedUsers, isPublished },
         { withCredentials: true }
       );
 
@@ -578,6 +579,31 @@ const CreateCoursePage = () => {
             <p className="text-xs text-muted-foreground">
               Featured image displayed on course cards and listings
             </p>
+          </div>
+
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div>
+              <Label htmlFor="course-publish" className="text-base font-medium">
+                Publish Course
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {isPublished
+                  ? "Course will be visible to students"
+                  : "Course will be in draft mode (not visible to students)"}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {isPublished ? (
+                <Badge className="bg-green-600 text-white px-3 py-1">Published</Badge>
+              ) : (
+                <Badge variant="secondary" className="px-3 py-1">Draft</Badge>
+              )}
+              <Checkbox
+                id="course-publish"
+                checked={isPublished}
+                onCheckedChange={(checked) => setIsPublished(checked === true)}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
