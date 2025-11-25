@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs";
+import { auth } from "@/lib/auth-server";
 import axios from "axios";
 import { NextResponse } from "next/server";
 
@@ -7,8 +7,8 @@ export async function POST(
   { params }: { params: { courseId: string } }
 ) {
   try {
-    const { userId } = auth();
-    if (!userId) {
+    const user = await auth();
+    if (!user) {
       return new NextResponse("Unauthorized access denied", { status: 401 });
     }
 
@@ -18,7 +18,7 @@ export async function POST(
     const chapter = await axios.post(`${process.env.BACK_END_URL}/api/chapters`, {
       ...values,
       courseId,
-      userId,
+      userId: user.userId,
     });
 
     return new NextResponse(chapter.data);

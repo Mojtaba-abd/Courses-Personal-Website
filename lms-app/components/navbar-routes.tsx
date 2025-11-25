@@ -1,21 +1,37 @@
 "use client";
 
-import { SignIn, UserButton, useAuth } from "@clerk/nextjs";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { SearchInput } from "./search-input";
-import { isTeacher } from "@/lib/teacher";
+import { useAuth } from "@/hooks/use-auth";
+import { logout } from "@/lib/auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const NavbarRoutes = () => {
   const pathname = usePathname();
-
-  const { userId } = useAuth()
+  const { user, isLoading } = useAuth();
 
   const isTeacherPage = pathname?.startsWith("/teacher");
   const isCoursePage = pathname?.includes("/courses");
   const isSearchPage = pathname === "/search";
+  const isTeacher = user?.role === "teacher" || user?.role === "admin";
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <>
@@ -32,16 +48,40 @@ const NavbarRoutes = () => {
               Exit
             </Button>
           </Link>
-        ) : isTeacher(userId!) ? (
+        ) : isTeacher ? (
           <Link href="/teacher/courses">
             <Button size="sm" variant={"ghost"}>
               Teacher Mode
             </Button>
           </Link>
         ) : null}
-        <UserButton afterSignOutUrl="/" />
-        {!userId && (
-          <SignIn />
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{user.username}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Link href="/login">
+            <Button size="sm" variant={"default"}>
+              Sign in
+            </Button>
+          </Link>
         )}
       </div>
     </>

@@ -1,7 +1,7 @@
 // "use client"
 
 import { IconBadge } from "@/components/icon-bage";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@/lib/auth-server";
 import { CircleDollarSign, File, LayoutDashboard, ListChecks } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -16,10 +16,10 @@ import { Banner } from "@/components/banner";
 import { Actions } from "./_components/actions";
 
 const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
-  const { userId } = auth();
+  const user = await auth();
 
-  if (!userId) {  
-    redirect("/");
+  if (!user) {  
+    redirect("/login");
   }
 
   const courseRes = await fetch( `${process.env.BACK_END_URL}/api/courses/${params.courseId}`);
@@ -47,8 +47,8 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
     redirect("/");
   }
 
-  if (course.userId !== userId) {
-    redirect("/");
+  if (course.userId !== user.userId) {
+    redirect("/login");
   }
 
   const requiredFields = [

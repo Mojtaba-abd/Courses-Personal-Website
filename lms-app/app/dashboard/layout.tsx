@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Navbar } from "./_components/navbar";
-import Sidebar from "./_components/sidebar";
+import { Navbar } from "@/app/(dashboard)/_components/navbar";
+import Sidebar from "@/app/(dashboard)/_components/sidebar";
 import { getCurrentUser } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
 
@@ -63,3 +63,4 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default DashboardLayout;
+

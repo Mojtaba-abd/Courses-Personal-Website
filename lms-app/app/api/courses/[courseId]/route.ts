@@ -1,5 +1,5 @@
 import Mux from "@mux/mux-node"
-import { auth } from "@clerk/nextjs"
+import { auth } from "@/lib/auth-server"
 import axios from "axios"
 import { NextResponse } from "next/server"
 

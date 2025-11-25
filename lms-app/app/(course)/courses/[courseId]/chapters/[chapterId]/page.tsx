@@ -1,6 +1,6 @@
 import { getChapters } from "@/actions/get-chapters";
 import { Banner } from "@/components/banner";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 import { VideoPlayer } from "./_components/video-player";
 import { CourseEnrollButton } from "./_components/course-enroll-button";
@@ -14,9 +14,9 @@ const ChapterIdPage = async ({
 }: {
   params: { courseId: string; chapterId: string };
 }) => {
-  const { userId } = auth();
-  if (!userId) {
-    return redirect("/");
+  const user = await auth();
+  if (!user) {
+    return redirect("/login");
   }
   const {
     course,
@@ -27,7 +27,7 @@ const ChapterIdPage = async ({
     nextChapter,
     isCompleted,
   } = await getChapters({
-    userId: userId,
+    userId: user.userId,
     courseId: params.courseId,
     chapterId: params.chapterId,
   });

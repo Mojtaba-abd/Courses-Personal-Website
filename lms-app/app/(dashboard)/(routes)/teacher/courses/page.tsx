@@ -1,6 +1,6 @@
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 import axios from "axios";
 
@@ -9,9 +9,9 @@ import axios from "axios";
 const CoursesPage = async () => {
 
 
-    const {userId} = auth()
-    if(!userId){
-        return redirect("/")
+    const user = await auth()
+    if(!user){
+        return redirect("/login")
     }
 
     const courses = await (await axios.get(`${process.env.BACK_END_URL}/api/courses`)).data

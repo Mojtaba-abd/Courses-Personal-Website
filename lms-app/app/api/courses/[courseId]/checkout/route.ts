@@ -1,5 +1,5 @@
 import { stripe } from "@/lib/stripe";
-import { currentUser } from "@clerk/nextjs";
+import { currentUser } from "@/lib/auth-server";
 import axios from "axios";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -11,7 +11,7 @@ export async function POST(
   try {
     const user = await currentUser();
 
-    if (!user || !user.id || !user.emailAddresses?.[0]?.emailAddress) {
+    if (!user || !user.id || !user.email) {
       return new NextResponse("Unauthorized access denied at chekout", {
         status: 401,
       });
@@ -49,12 +49,12 @@ export async function POST(
 
     if (!stripeCustomer) {
       const customer = await stripe.customers.create({
-        email: user.emailAddresses[0].emailAddress,
+        email: user.email,
       });
 
       stripeCustomer = (
         await axios.post(`${process.env.BACK_END_URL}/api/stripeCustomers`, {
-          email: user.emailAddresses[0].emailAddress,
+          email: user.email,
           userId: user.id,
           stripeCustomerId: customer.id,
         })

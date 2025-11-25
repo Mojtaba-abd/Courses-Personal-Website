@@ -5,10 +5,10 @@ import { GetDashboardCourses } from "@/actions/get-dashboard-courses";
 import { CoursesList } from "@/components/courses-list";
 import { useAuth } from "@/hooks/use-auth";
 import { CheckCircle, Clock } from "lucide-react";
-import { InfoCard } from "./_components/info-card";
+import { InfoCard } from "@/app/(dashboard)/(routes)/(root)/_components/info-card";
 import { Loader2 } from "lucide-react";
 
-export default function Dashboard() {
+export default function DashboardPage() {
   const { user, isLoading } = useAuth();
   const [courses, setCourses] = useState<{
     completedCourses: any[];
@@ -60,3 +60,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

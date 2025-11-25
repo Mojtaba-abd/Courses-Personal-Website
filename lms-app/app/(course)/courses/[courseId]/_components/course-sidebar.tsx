@@ -1,5 +1,3 @@
-import { auth } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
 import { CourseSidebarItem } from "./course-sidebar-item";
 import { CourseProgress } from "@/components/course-progress";
 

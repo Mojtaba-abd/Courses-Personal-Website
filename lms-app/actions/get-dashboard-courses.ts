@@ -6,15 +6,17 @@ type DashboardCourses = {
   courseInProgress: any[];
 };
 
+const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
+
 export const GetDashboardCourses = async (
   userId: string
 ): Promise<DashboardCourses> => {
   try {
-    const categories = (await axios.get(`${process.env.BACK_END_URL}/api/category`))
+    const categories = (await axios.get(`${API_URL}/api/category`))
       .data;
     const purchasedCourses = (
       await axios.get(
-        `${process.env.BACK_END_URL}/api/courses/user/${userId}/purchased`
+        `${API_URL}/api/courses/user/${userId}/purchased`
       )
     ).data;
 
@@ -22,7 +24,7 @@ export const GetDashboardCourses = async (
       purchasedCourses.map(async (course: any) => {
         const publishedChapters = (
           await axios.get(
-            `${process.env.BACK_END_URL}/api/chapters/${course._id}/published`
+            `${API_URL}/api/chapters/${course._id}/published`
           )
         ).data;
 

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Categories } from "./_components/categories";
 import { SearchInput } from "@/components/search-input";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 import { getCourses } from "@/actions/get-courses";
 import { CoursesList } from "@/components/courses-list";
@@ -16,9 +16,9 @@ interface searchPageProps{
 const SearchPage = async ({ searchParams } : searchPageProps) => {
 
 
-  const { userId } = auth()
-  if(!userId){
-    return redirect("/")
+  const user = await auth()
+  if(!user){
+    return redirect("/login")
   }
 
   const categories = await (
@@ -26,7 +26,7 @@ const SearchPage = async ({ searchParams } : searchPageProps) => {
   ).data;
 
 
-  const courses = await getCourses({userId, ...searchParams})
+  const courses = await getCourses({userId: user.userId, ...searchParams})
 
   return (
     <>

@@ -1,5 +1,5 @@
 import Mux from "@mux/mux-node"
-import { auth } from "@clerk/nextjs"
+import { auth } from "@/lib/auth-server"
 import axios from "axios"
 import { NextResponse } from "next/server"
 
@@ -10,8 +10,8 @@ const { Video } = new Mux(
 
 export async function DELETE(req:Request, { params } : { params: { courseId: string, chapterId: string}}) {
     try {
-        const { userId } = auth()
-        if(!userId){
+        const user = await auth()
+        if(!user){
             return new NextResponse("Unauthorized access denied", {status: 401})
         }
 
@@ -42,8 +42,8 @@ export async function PATCH(req: Request, { params } : { params : { courseId: st
     try {
 
 
-        const {userId} = auth()
-        if(!userId){
+        const user = await auth()
+        if(!user){
             return new NextResponse("Unauthorized access denied", { status: 401})
         }
 
@@ -64,10 +64,10 @@ export async function PATCH(req: Request, { params } : { params : { courseId: st
                 test: false
             })
             
-             chapter = await axios.patch(`${process.env.BACK_END_URL}/api/chapters/${params.chapterId}/course/${params.courseId}`,{...values,userId, assetId: asset.id, playbackId: asset.playback_ids?.[0]?.id})
+             chapter = await axios.patch(`${process.env.BACK_END_URL}/api/chapters/${params.chapterId}/course/${params.courseId}`,{...values,userId: user.userId, assetId: asset.id, playbackId: asset.playback_ids?.[0]?.id})
             
         }else{
-             chapter = await axios.patch(`${process.env.BACK_END_URL}/api/chapters/${params.chapterId}/course/${params.courseId}`,{...values,userId})
+             chapter = await axios.patch(`${process.env.BACK_END_URL}/api/chapters/${params.chapterId}/course/${params.courseId}`,{...values,userId: user.userId})
         }
             
 

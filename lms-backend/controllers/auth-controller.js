@@ -14,21 +14,39 @@ export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
+    console.log("Login attempt for username:", username);
+
     if (!username || !password) {
       return res.status(400).json({ error: "Username and password are required" });
     }
 
-    const user = await userModel.findOne({ username }).select("+password");
+    // Find user with case-insensitive username lookup and explicitly select password field
+    const user = await userModel.findOne({ 
+      username: { $regex: new RegExp(`^${username}$`, "i") } 
+    }).select("+password");
 
     if (!user) {
+      console.log("User not found:", username);
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    console.log("User found:", user.username, "Comparing password...");
+    
+    // Check if password exists and is not null
+    if (!user.password) {
+      console.log("User password is missing!");
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+    
+    // Compare password
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
+      console.log("Password mismatch for user:", user.username);
       return res.status(401).json({ error: "Invalid credentials" });
     }
+
+    console.log("Password valid, generating token...");
 
     const token = signToken({
       userId: user._id.toString(),
@@ -45,6 +63,8 @@ export const login = async (req, res) => {
       domain: undefined, // Don't set domain for localhost
     });
 
+    console.log("Login successful for user:", user.username);
+
     res.json({
       user: {
         id: user._id.toString(),
@@ -55,7 +75,7 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", details: error.message });
   }
 };
 

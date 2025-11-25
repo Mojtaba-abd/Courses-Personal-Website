@@ -1,10 +1,9 @@
-// "use client"
+"use client"
 
 import { Menu } from "lucide-react";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { CourseSidebar } from "./course-sidebar";
-import { auth } from "@clerk/nextjs";
 
 interface courseMobileSidebarProps {
   course: {
@@ -19,20 +18,21 @@ interface courseMobileSidebarProps {
     isFree: boolean;
     purchased: { [key: string]: boolean };
   }[];
+  userId: string;
 }
 
 export const CourseMobileSidebar = ({
   course,
   chapters,
+  userId,
 }: courseMobileSidebarProps) => {
-  const { userId } = auth();
   return (
     <Sheet>
       <SheetTrigger className="md:hidden pr-4 hover:opacity-75 transition">
         <Menu />
       </SheetTrigger>
       <SheetContent className="p-0 bg-white w-72" side="left">
-        <CourseSidebar userId={userId!} course={course} chapters={chapters} />
+        <CourseSidebar userId={userId} course={course} chapters={chapters} />
       </SheetContent>
     </Sheet>
   );

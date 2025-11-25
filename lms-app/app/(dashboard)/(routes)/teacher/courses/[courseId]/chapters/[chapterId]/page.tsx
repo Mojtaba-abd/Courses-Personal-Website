@@ -1,5 +1,5 @@
 import { IconBadge } from "@/components/icon-bage";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@/lib/auth-server";
 import axios from "axios";
 import { ArrowLeft, Eye, LayoutDashboard, Video } from "lucide-react";
 import Link from "next/link";
@@ -16,9 +16,9 @@ const ChapterIdPage = async ({
 }: {
   params: { courseId: string; chapterId: string };
 }) => {
-  const { userId } = auth();
-  if (!userId) {
-    return redirect("/");
+  const user = await auth();
+  if (!user) {
+    return redirect("/login");
   }
 
   const chapter = await (

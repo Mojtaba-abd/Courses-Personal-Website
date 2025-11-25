@@ -1,16 +1,16 @@
-import { auth } from "@clerk/nextjs";
+import { auth } from "@/lib/auth-server";
 import axios from "axios";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { userId } = auth();
+    const user = await auth();
+    if (!user) return new NextResponse("Unauthorized", { status: 401 });
+
     const { title } = await req.json();
 
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
-
     const course = await axios.post(`${process.env.BACK_END_URL}/api/courses`, {
-      userId,
+      userId: user.userId,
       title,
     });
 

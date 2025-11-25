@@ -1,11 +1,11 @@
-import { auth } from "@clerk/nextjs"
+import { auth } from "@/lib/auth-server"
 import axios from "axios"
 import { NextResponse } from "next/server"
 
 export async function DELETE(req: Request, { params } : { params : { courseId : string, attachmentIdx : number}}){
     try {
-        const {userId} = auth()
-        if(!userId){
+        const user = await auth()
+        if(!user){
             return new NextResponse("Unauthorized access denied!", {status : 401})
         }
 
