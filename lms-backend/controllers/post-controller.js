@@ -40,6 +40,27 @@ export const getOnePost = async (req, res) => {
   }
 };
 
+export const getOnePostById = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const post = await postModel.findById(postId).populate("author", "username email");
+
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    // Only admins can see unpublished posts
+    if (!post.isPublished && (!req.user || req.user.role !== "admin")) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    res.status(200).json(post);
+  } catch (error) {
+    console.error("Get post by ID error:", error);
+    return res.status(500).json({ error: error.message || "Failed to get post" });
+  }
+};
+
 export const createPost = async (req, res) => {
   try {
     const post = await postModel.create({

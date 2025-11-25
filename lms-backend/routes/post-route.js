@@ -2,6 +2,7 @@ import Express from "express";
 import {
   getAllPosts,
   getOnePost,
+  getOnePostById,
   createPost,
   updatePost,
   deletePost,
@@ -10,12 +11,13 @@ import { authenticate, requireAdmin, optionalAuth } from "../middleware/auth-mid
 
 const postRouter = Express.Router();
 
-// Public routes
+// Public routes - order matters: specific routes before dynamic ones
 postRouter.get("/", optionalAuth, getAllPosts);
 postRouter.get("/slug/:slug", optionalAuth, getOnePost);
 
 // Admin-only routes
 postRouter.post("/", authenticate, requireAdmin, createPost);
+postRouter.get("/:postId", authenticate, requireAdmin, getOnePostById);
 postRouter.put("/:postId", authenticate, requireAdmin, updatePost);
 postRouter.delete("/:postId", authenticate, requireAdmin, deletePost);
 

@@ -1,6 +1,6 @@
 "use client"
 
-import {Compass, Layout,List, Users, Award} from "lucide-react"
+import {Compass, Layout,List, Users, Award, FileText} from "lucide-react"
 import SidebarItem from "./sidebar-item";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
@@ -36,6 +36,11 @@ const adminRoutes = [
         icon: Award,
         label: "Certifications",
         href: "/dashboard/certifications"
+    },
+    {
+        icon: FileText,
+        label: "Blog",
+        href: "/dashboard/posts"
     }
 ]
 
