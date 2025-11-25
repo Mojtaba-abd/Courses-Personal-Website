@@ -2,12 +2,26 @@
 
 import { Button } from "@/components/ui/button"
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react"
+import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 
 import { DropdownMenu,DropdownMenuContent ,DropdownMenuTrigger,DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import axios from "axios"
+import { toast } from "react-hot-toast"
 
 export type course = {
     _id: string,
@@ -16,7 +30,11 @@ export type course = {
     isPublished: boolean
 }
 
-export const columns: ColumnDef<course>[] = [
+interface ColumnsProps {
+  onDelete?: () => void;
+}
+
+export const createColumns = (onDelete?: () => void): ColumnDef<course>[] => [
   {
     accessorKey: "title",
     header: ({ column }) => {
@@ -82,9 +100,39 @@ export const columns: ColumnDef<course>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-        const { _id } = row.original
+        const { _id, title } = row.original
+        const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+        const [isDeleting, setIsDeleting] = useState(false)
+        const router = useRouter()
+        const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000"
+
+        const handleDelete = async () => {
+            setIsDeleting(true)
+            try {
+                await axios.delete(`${API_URL}/api/courses/${_id}`, {
+                    withCredentials: true
+                })
+                toast.success("Course deleted successfully")
+                setDeleteDialogOpen(false)
+                // Call the refetch callback if provided
+                if (onDelete) {
+                    onDelete()
+                } else {
+                    // Fallback: refresh router
+                    router.refresh()
+                    setTimeout(() => {
+                        window.location.reload()
+                    }, 500)
+                }
+            } catch (error: any) {
+                toast.error(error.response?.data?.error || "Failed to delete course")
+            } finally {
+                setIsDeleting(false)
+            }
+        }
 
         return(
+            <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-4 w-8 p-0">
@@ -95,15 +143,47 @@ export const columns: ColumnDef<course>[] = [
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <Link href={`/teacher/courses/${_id}`}>
+                    <Link href={`/dashboard/teacher/courses/${_id}`}>
                     <DropdownMenuItem>
                         <Pencil className="h-4 w-4 mr-2" />
                         Edit
                     </DropdownMenuItem>
                     </Link>
+                    <DropdownMenuItem
+                        onClick={() => setDeleteDialogOpen(true)}
+                        className="text-destructive"
+                    >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the course
+                            "{title}" and all associated data.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {isDeleting ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            </>
         )
     }
   }
 ]
+
+// Export default columns for backward compatibility
+export const columns = createColumns()

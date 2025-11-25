@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DataTable } from "@/app/(dashboard)/(routes)/teacher/courses/_components/data-table";
-import { columns } from "@/app/(dashboard)/(routes)/teacher/courses/_components/columns";
+import { createColumns } from "@/app/(dashboard)/(routes)/teacher/courses/_components/columns";
 import { useAuth } from "@/hooks/use-auth";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
@@ -52,6 +52,8 @@ const CoursesPage = () => {
       </div>
     );
   }
+
+  const columns = createColumns(fetchCourses);
 
   return (
     <div className="p-6">
