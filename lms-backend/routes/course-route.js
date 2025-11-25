@@ -1,0 +1,34 @@
+import Express from "express";
+import {
+  createCourse,
+  getAllCourses,
+  getOneCourse,
+  updateCourse,
+  deleteCourse,
+  updataTitle,
+  addAttachments,
+  deleteAttachments,
+  purchaseCourse,
+  getPurchasedCourses,
+} from "../controllers/course-controller.js";
+import { authenticate, requireAdmin, optionalAuth } from "../middleware/auth-middleware.js";
+
+const courseRouter = Express.Router();
+
+// Public routes with optional auth (to check if user is admin)
+courseRouter.get("/", optionalAuth, getAllCourses);
+courseRouter.get("/:courseId", optionalAuth, getOneCourse);
+courseRouter.get("/user/:userId/purchased", getPurchasedCourses);
+
+// Admin-only routes
+courseRouter.post("/", authenticate, requireAdmin, createCourse);
+courseRouter.put("/:courseId", authenticate, requireAdmin, updateCourse);
+courseRouter.delete("/:courseId", authenticate, requireAdmin, deleteCourse);
+
+// Existing routes (for backward compatibility)
+courseRouter.post("/:courseId/attachments", authenticate, addAttachments);
+courseRouter.post("/:courseId/user/:userId/purchased", purchaseCourse);
+courseRouter.patch("/:courseId", authenticate, updataTitle);
+courseRouter.delete("/:courseId/attachments/:attachmentIdx", authenticate, deleteAttachments);
+
+export default courseRouter;
