@@ -353,10 +353,16 @@ const LessonPage = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4 text-white">الوصول مرفوض</h1>
           <p className="text-text-secondary mb-4">يجب أن تكون مسجلاً لعرض هذا الدرس.</p>
-          <button onClick={() => router.push(`/courses/${courseId}`)} className="px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-glow">
-            <i className="fas fa-arrow-right" />
-            العودة للدورة
-          </button>
+          <div className="flex items-center justify-center gap-4">
+            <Link href="/" className="px-6 py-3 rounded-[50px] bg-gray-700 hover:bg-gray-600 text-white font-semibold inline-flex items-center gap-2 transition-colors">
+              <i className="fas fa-home" />
+              الرئيسية
+            </Link>
+            <button onClick={() => router.push(`/courses/${courseId}`)} className="px-6 py-3 rounded-[50px] bg-cyan-600 hover:bg-cyan-700 text-white font-semibold inline-flex items-center gap-2 transition-colors">
+              <i className="fas fa-arrow-right" />
+              العودة للدورة
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -381,9 +387,16 @@ const LessonPage = () => {
         <div className="container mx-auto px-5 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
+              <Link
+                href="/"
+                className="px-4 py-2 rounded-[50px] bg-gray-700 hover:bg-gray-600 text-white font-semibold inline-flex items-center gap-2 text-sm transition-colors"
+              >
+                <i className="fas fa-home" />
+                الرئيسية
+              </Link>
               <button
                 onClick={() => router.push(`/courses/${courseId}`)}
-                className="px-4 py-2 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2 text-sm transition-all hover:-translate-y-0.5 hover:shadow-glow"
+                className="px-4 py-2 rounded-[50px] bg-cyan-600 hover:bg-cyan-700 text-white font-semibold inline-flex items-center gap-2 text-sm transition-colors"
               >
                 <i className="fas fa-arrow-right" />
                 العودة للدورة
@@ -476,7 +489,7 @@ const LessonPage = () => {
                             <p className="font-medium text-sm text-white">{attachment.name || `مرفق ${idx + 1}`}</p>
                             <p className="text-xs text-text-secondary">{attachment.type || "ملف"}</p>
                           </div>
-                          <button className="px-4 py-2 rounded-[50px] bg-gradient-2 text-white font-semibold text-xs transition-all hover:-translate-y-0.5 hover:shadow-glow">
+                          <button className="px-4 py-2 rounded-[50px] bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-xs transition-colors">
                             <i className="fas fa-download ml-1" /> تحميل
                           </button>
                         </a>
@@ -492,7 +505,7 @@ const LessonPage = () => {
               <button
                 onClick={() => navigateToLesson(currentLessonIndex - 1)}
                 disabled={currentLessonIndex === 0}
-                className="px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2 text-sm transition-all hover:-translate-y-0.5 hover:shadow-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                className="px-6 py-3 rounded-[50px] bg-cyan-600 hover:bg-cyan-700 text-white font-semibold inline-flex items-center gap-2 text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-cyan-600"
               >
                 <i className="fas fa-arrow-right" />
                 الدرس السابق
@@ -500,7 +513,7 @@ const LessonPage = () => {
               <button
                 onClick={() => navigateToLesson(currentLessonIndex + 1)}
                 disabled={currentLessonIndex >= allLessons.length - 1}
-                className="px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2 text-sm transition-all hover:-translate-y-0.5 hover:shadow-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                className="px-6 py-3 rounded-[50px] bg-cyan-600 hover:bg-cyan-700 text-white font-semibold inline-flex items-center gap-2 text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-cyan-600"
               >
                 الدرس التالي
                 <i className="fas fa-arrow-left" />

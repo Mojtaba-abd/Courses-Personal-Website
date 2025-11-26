@@ -76,6 +76,12 @@ const BlogPage = () => {
     <div className="min-h-screen bg-darker-bg text-text-primary">
       <div className="container mx-auto px-5 py-24">
         <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <Link href="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-secondary-old transition-colors">
+              <i className="fas fa-arrow-right" />
+              <span>العودة للصفحة الرئيسية</span>
+            </Link>
+          </div>
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold mb-4 bg-gradient-cyber bg-clip-text text-transparent">
               <i className="fas fa-blog ml-4 text-secondary-old" /> المدونة

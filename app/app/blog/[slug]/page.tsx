@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import axios from "axios";
 import Image from "next/image";
 import { Loader2, Calendar, User } from "lucide-react";
@@ -84,20 +85,26 @@ const BlogPostPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-darker-bg text-text-primary">
       <article className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <Link href="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-secondary-old transition-colors">
+              <i className="fas fa-arrow-right" />
+              <span>العودة للصفحة الرئيسية</span>
+            </Link>
+          </div>
           <header className="mb-8">
             {post.category && (
-              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary mb-4">
+              <span className="inline-flex items-center rounded-full bg-cyan-600/20 px-3 py-1 text-sm font-medium text-cyan-500 mb-4">
                 {post.category}
               </span>
             )}
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">{post.title}</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">{post.title}</h1>
             {post.excerpt && (
-              <p className="text-xl text-muted-foreground mb-6">{post.excerpt}</p>
+              <p className="text-xl text-text-secondary mb-6">{post.excerpt}</p>
             )}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-4 text-sm text-text-secondary">
               {post.author && (
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4" />
@@ -117,13 +124,14 @@ const BlogPostPage = () => {
                 src={post.featuredImage}
                 alt={post.title}
                 fill
+                sizes="100vw"
                 className="object-cover"
               />
             </div>
           )}
 
           <div
-            className="prose prose-lg prose-slate max-w-none dark:prose-invert"
+            className="prose prose-lg prose-slate max-w-none dark:prose-invert text-white"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
         </div>

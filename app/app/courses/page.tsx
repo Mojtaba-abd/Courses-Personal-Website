@@ -59,6 +59,12 @@ const CoursesPage = () => {
     <div className="min-h-screen bg-darker-bg text-text-primary">
       <div className="container mx-auto px-5 py-24">
         <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <Link href="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-secondary-old transition-colors">
+              <i className="fas fa-arrow-right" />
+              <span>العودة للصفحة الرئيسية</span>
+            </Link>
+          </div>
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold mb-4 bg-gradient-cyber bg-clip-text text-transparent">
               <i className="fas fa-graduation-cap ml-4 text-secondary-old" /> الكورسات المتوفرة
@@ -112,7 +118,7 @@ const CoursesPage = () => {
                           {formatPrice(course.price)}
                         </span>
                       </div>
-                      <div className="px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold text-sm text-center">
+                      <div className="px-6 py-3 rounded-[50px] bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-sm text-center transition-colors">
                         عرض التفاصيل
                       </div>
                     </div>

@@ -493,37 +493,38 @@ const CreateCoursePage = () => {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto bg-[#0f0f0f] min-h-screen">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Create New Course</h1>
-        <p className="text-muted-foreground">Add course details, structure, and enrolled students</p>
+        <h1 className="text-3xl font-bold mb-2 text-white">Create New Course</h1>
+        <p className="text-gray-400">Add course details, structure, and enrolled students</p>
       </div>
 
       {/* Course Information Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Course Information</CardTitle>
-          <CardDescription>Basic details about your course</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="mb-6 bg-[#1a1a1a] border border-gray-800 rounded-2xl overflow-hidden">
+        <div className="p-6 border-b border-gray-800">
+          <h3 className="text-xl font-semibold text-white">Course Information</h3>
+          <p className="text-sm text-gray-400 mt-1">Basic details about your course</p>
+        </div>
+        <div className="p-6 space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="title">Title *</Label>
+            <Label htmlFor="title" className="text-white">Title *</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Next.js Full Course"
               required
+              className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category" className="text-white">Category</Label>
             <select
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex h-10 w-full rounded-md border border-gray-800 bg-[#0f0f0f] px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
             >
               <option value="">Select category</option>
               {CATEGORIES.map((cat) => (
@@ -535,36 +536,37 @@ const CreateCoursePage = () => {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="featured-image">Featured Image</Label>
+            <Label htmlFor="featured-image" className="text-white">Featured Image</Label>
             {imagePreview ? (
-              <div className="relative w-full h-48 mb-2 border rounded-lg overflow-hidden">
+              <div className="relative w-full h-48 mb-2 border border-gray-800 rounded-lg overflow-hidden">
                 <Image
                   src={imagePreview}
                   alt="Featured image preview"
                   fill
+                  sizes="100vw"
                   className="object-cover"
                 />
                 <Button
                   type="button"
                   variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2"
+                  className="absolute top-2 right-2 bg-red-600 hover:bg-red-700"
                   onClick={removeImage}
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center justify-center w-full h-48 border-2 border-dashed rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+              <div className="flex items-center justify-center w-full h-48 border-2 border-dashed border-gray-800 rounded-lg bg-[#0f0f0f] hover:bg-gray-900 transition-colors">
                 <label
                   htmlFor="featured-image"
                   className="flex flex-col items-center justify-center w-full h-full cursor-pointer"
                 >
-                  <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">
+                  <ImageIcon className="h-10 w-10 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-400">
                     {isUploading ? "Uploading..." : "Click to upload or drag and drop"}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                     PNG, JPG, GIF up to 10MB
                   </p>
                 </label>
@@ -578,17 +580,17 @@ const CreateCoursePage = () => {
                 />
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-400">
               Featured image displayed on course cards and listings
             </p>
           </div>
 
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-gray-800 rounded-lg bg-[#0f0f0f]">
             <div>
-              <Label htmlFor="course-publish" className="text-base font-medium">
+              <Label htmlFor="course-publish" className="text-base font-medium text-white">
                 Publish Course
               </Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-400">
                 {isPublished
                   ? "Course will be visible to students"
                   : "Course will be in draft mode (not visible to students)"}
@@ -598,7 +600,7 @@ const CreateCoursePage = () => {
               {isPublished ? (
                 <Badge className="bg-green-600 text-white px-3 py-1">Published</Badge>
               ) : (
-                <Badge variant="secondary" className="px-3 py-1">Draft</Badge>
+                <Badge className="bg-gray-700 text-gray-300 px-3 py-1">Draft</Badge>
               )}
               <Checkbox
                 id="course-publish"
@@ -607,24 +609,24 @@ const CreateCoursePage = () => {
               />
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Course Structure Section */}
-      <Card className="mb-6">
-        <CardHeader>
+      <div className="mb-6 bg-[#1a1a1a] border border-gray-800 rounded-2xl overflow-hidden">
+        <div className="p-6 border-b border-gray-800">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Course Structure</CardTitle>
-              <CardDescription>Add chapters and lessons to organize your course content</CardDescription>
+              <h3 className="text-xl font-semibold text-white">Course Structure</h3>
+              <p className="text-sm text-gray-400 mt-1">Add chapters and lessons to organize your course content</p>
             </div>
-            <Button onClick={openAddChapterDialog}>
+            <Button onClick={openAddChapterDialog} className="bg-cyan-600 hover:bg-cyan-700 text-white">
               <Plus className="h-4 w-4 mr-2" />
               Add Chapter
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="p-6">
           <div className="space-y-4">
             {chapters.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -640,22 +642,22 @@ const CreateCoursePage = () => {
                 const lessons = lessonsByChapter[chapter._id] || [];
 
                 return (
-                  <Card key={chapter._id} className="overflow-hidden">
-                    <CardHeader
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  <div key={chapter._id} className="overflow-hidden bg-[#0f0f0f] border border-gray-800 rounded-lg mb-4">
+                    <div
+                      className="cursor-pointer hover:bg-gray-800/50 transition-colors p-4 border-b border-gray-800"
                       onClick={() => toggleChapter(chapter._id)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white hover:bg-gray-800">
                             {isExpanded ? (
                               <ChevronUp className="h-4 w-4" />
                             ) : (
                               <ChevronDown className="h-4 w-4" />
                             )}
                           </Button>
-                          <CardTitle className="text-lg">{chapter.title || "Untitled Chapter"}</CardTitle>
-                          <span className="text-sm text-muted-foreground">
+                          <h3 className="text-lg font-semibold text-white">{chapter.title || "Untitled Chapter"}</h3>
+                          <span className="text-sm text-gray-400">
                             ({lessons.length} {lessons.length === 1 ? "lesson" : "lessons"})
                           </span>
                         </div>
@@ -667,6 +669,7 @@ const CreateCoursePage = () => {
                               e.stopPropagation();
                               openEditChapterDialog(chapter);
                             }}
+                            className="text-gray-400 hover:text-white hover:bg-gray-800"
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -677,34 +680,35 @@ const CreateCoursePage = () => {
                               e.stopPropagation();
                               handleDeleteChapter(chapter._id);
                             }}
+                            className="text-gray-400 hover:text-red-500 hover:bg-gray-800"
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
-                    </CardHeader>
+                    </div>
 
                     {isExpanded && (
-                      <CardContent className="pt-0">
+                      <div className="pt-0 p-4">
                         <div className="space-y-3">
                           {lessons.map((lesson) => (
                             <div
                               key={lesson._id}
-                              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                              className="flex items-center justify-between p-3 border border-gray-800 rounded-lg hover:bg-gray-800/50 transition-colors bg-[#0f0f0f] mb-2"
                             >
                               <div className="flex items-center gap-3 flex-1">
-                                <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                <GripVertical className="h-4 w-4 text-gray-400" />
                                 <div className="flex-1">
-                                  <h4 className="font-medium">{lesson.title}</h4>
+                                  <h4 className="font-medium text-white">{lesson.title}</h4>
                                   {lesson.description && (
-                                    <p className="text-sm text-muted-foreground line-clamp-1">
+                                    <p className="text-sm text-gray-400 line-clamp-1">
                                       {lesson.description}
                                     </p>
                                   )}
-                                  <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                                  <div className="flex items-center gap-4 mt-1 text-xs text-gray-400">
                                     {lesson.duration && <span>Duration: {lesson.duration} min</span>}
                                     {lesson.isFree && (
-                                      <span className="text-green-600 font-medium">Free</span>
+                                      <span className="text-green-500 font-medium">Free</span>
                                     )}
                                   </div>
                                 </div>
@@ -724,6 +728,7 @@ const CreateCoursePage = () => {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => openEditLessonDialog(lesson)}
+                                  className="text-gray-400 hover:text-white hover:bg-gray-800"
                                 >
                                   <Edit2 className="h-4 w-4" />
                                 </Button>
@@ -731,77 +736,79 @@ const CreateCoursePage = () => {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleDeleteLesson(lesson._id, lesson.chapterId)}
+                                  className="text-gray-400 hover:text-red-500 hover:bg-gray-800"
                                 >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>
                           ))}
                           <Button
-                            variant="outline"
-                            className="w-full"
+                            className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
                             onClick={() => openAddLessonDialog(chapter._id)}
                           >
                             <Plus className="h-4 w-4 mr-2" />
                             Add Lesson
                           </Button>
                         </div>
-                      </CardContent>
+                      </div>
                     )}
-                  </Card>
+                  </div>
                 );
               })
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Enrolled Students Section */}
-      <Card className="mb-6">
-        <CardHeader>
+      <div className="mb-6 bg-[#1a1a1a] border border-gray-800 rounded-2xl overflow-hidden">
+        <div className="p-6 border-b border-gray-800">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Enrolled Students</CardTitle>
-              <CardDescription>Select users to enroll in this course</CardDescription>
+              <h3 className="text-xl font-semibold text-white">Enrolled Students</h3>
+              <p className="text-sm text-gray-400 mt-1">Select users to enroll in this course</p>
             </div>
-            <Button onClick={openEnrollmentDialog} variant="outline">
+            <Button onClick={openEnrollmentDialog} className="bg-cyan-600 hover:bg-cyan-700 text-white">
               <Users className="h-4 w-4 mr-2" />
               Manage Enrollment
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="p-6">
           {enrolledUsersDetails.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No students enrolled yet. Click "Manage Enrollment" to add students.</p>
+            <p className="text-sm text-gray-400">No students enrolled yet. Click "Manage Enrollment" to add students.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {enrolledUsersDetails.map((student) => {
-                  const userId = student.id || student._id || "";
-                  return (
-                    <TableRow key={userId}>
-                      <TableCell className="font-medium">{student.username}</TableCell>
-                      <TableCell>{student.email}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary capitalize">
-                          {student.role}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            <div className="bg-[#0f0f0f] border border-gray-800 rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-gray-800 hover:bg-gray-800/50">
+                    <TableHead className="text-gray-300">Name</TableHead>
+                    <TableHead className="text-gray-300">Email</TableHead>
+                    <TableHead className="text-gray-300">Role</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {enrolledUsersDetails.map((student) => {
+                    const userId = student.id || student._id || "";
+                    return (
+                      <TableRow key={userId} className="border-gray-800 hover:bg-gray-800/50">
+                        <TableCell className="font-medium text-white">{student.username}</TableCell>
+                        <TableCell className="text-gray-300">{student.email}</TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center rounded-full bg-cyan-600/20 px-2.5 py-0.5 text-xs font-medium text-cyan-500 capitalize">
+                            {student.role}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Create Course Button */}
       <div className="flex items-center justify-end gap-4 pt-6 border-t">
@@ -825,11 +832,11 @@ const CreateCoursePage = () => {
 
       {/* Chapter Dialog */}
       <Dialog open={chapterDialogOpen} onOpenChange={setChapterDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white">
           <form onSubmit={handleChapterSubmit}>
             <DialogHeader>
-              <DialogTitle>{editingChapter ? "Edit Chapter" : "Add Chapter"}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-white">{editingChapter ? "Edit Chapter" : "Add Chapter"}</DialogTitle>
+              <DialogDescription className="text-gray-400">
                 {editingChapter
                   ? "Update the chapter title"
                   : "Add a new chapter to organize your course content"}
@@ -837,21 +844,22 @@ const CreateCoursePage = () => {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="chapter-title">Chapter Title *</Label>
+                <Label htmlFor="chapter-title" className="text-white">Chapter Title *</Label>
                 <Input
                   id="chapter-title"
                   name="title"
                   placeholder="e.g., Introduction to Next.js"
                   required
                   defaultValue={editingChapter?.title || ""}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setChapterDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setChapterDialogOpen(false)} className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white">
                 Cancel
               </Button>
-              <Button type="submit">Save</Button>
+              <Button type="submit" className="bg-cyan-600 hover:bg-cyan-700 text-white">Save</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -859,11 +867,11 @@ const CreateCoursePage = () => {
 
       {/* Lesson Dialog */}
       <Dialog open={lessonDialogOpen} onOpenChange={setLessonDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border-gray-800 text-white">
           <form onSubmit={handleLessonSubmit}>
             <DialogHeader>
-              <DialogTitle>{editingLesson ? "Edit Lesson" : "Add Lesson"}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-white">{editingLesson ? "Edit Lesson" : "Add Lesson"}</DialogTitle>
+              <DialogDescription className="text-gray-400">
                 {editingLesson
                   ? "Update the lesson details"
                   : "Add a new lesson to this chapter"}
@@ -871,29 +879,30 @@ const CreateCoursePage = () => {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="lesson-title">Lesson Title *</Label>
+                <Label htmlFor="lesson-title" className="text-white">Lesson Title *</Label>
                 <Input
                   id="lesson-title"
                   name="title"
                   placeholder="e.g., Setting up Next.js"
                   required
                   defaultValue={editingLesson?.title || ""}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="lesson-content">Content (Rich Text)</Label>
+                <Label htmlFor="lesson-content" className="text-white">Content (Rich Text)</Label>
                 <RichTextEditor
                   value={lessonContent}
                   onChange={setLessonContent}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-gray-400">
                   Use the editor to add formatted text, images, and links. Images will be uploaded automatically.
                 </p>
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="lesson-video">Video URL (YouTube)</Label>
+                <Label htmlFor="lesson-video" className="text-white">Video URL (YouTube)</Label>
                 <Input
                   id="lesson-video"
                   name="videoUrl"
@@ -901,6 +910,7 @@ const CreateCoursePage = () => {
                   placeholder="https://www.youtube.com/watch?v=..."
                   defaultValue={editingLesson?.videoUrl || ""}
                   onChange={(e) => setYoutubeThumbnail(getYouTubeThumbnail(e.target.value))}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
                 {youtubeThumbnail && (
                   <div className="relative w-full h-48 mt-2 rounded-lg overflow-hidden">
@@ -914,13 +924,14 @@ const CreateCoursePage = () => {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="lesson-duration">Duration (minutes)</Label>
+                <Label htmlFor="lesson-duration" className="text-white">Duration (minutes)</Label>
                 <Input
                   id="lesson-duration"
                   name="duration"
                   type="number"
                   placeholder="e.g., 15"
                   defaultValue={editingLesson?.duration || ""}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
 
@@ -930,18 +941,18 @@ const CreateCoursePage = () => {
                   name="isFree"
                   defaultChecked={editingLesson?.isFree || false}
                 />
-                <Label htmlFor="lesson-free" className="cursor-pointer">
+                <Label htmlFor="lesson-free" className="cursor-pointer text-white">
                   Free lesson (accessible without enrollment)
                 </Label>
               </div>
 
               {/* Attachments Section */}
-              <div className="grid gap-2 border-t pt-4">
-                <Label>Attachments (PDF/ZIP)</Label>
+              <div className="grid gap-2 border-t border-gray-800 pt-4">
+                <Label className="text-white">Attachments (PDF/ZIP)</Label>
                 <div className="flex items-center gap-2">
                   <label
                     htmlFor="attachment-upload"
-                    className="flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-muted transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-800 rounded-md cursor-pointer hover:bg-gray-800 transition-colors text-white"
                   >
                     <Upload className="h-4 w-4" />
                     <span className="text-sm">
@@ -965,13 +976,13 @@ const CreateCoursePage = () => {
                     {lessonAttachments.map((attachment, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-3 border rounded-lg"
+                        className="flex items-center justify-between p-3 border border-gray-800 rounded-lg bg-[#0f0f0f]"
                       >
                         <div className="flex items-center gap-2 flex-1">
-                          <File className="h-4 w-4 text-muted-foreground" />
+                          <File className="h-4 w-4 text-gray-400" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{attachment.name}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-sm font-medium truncate text-white">{attachment.name}</p>
+                            <p className="text-xs text-gray-400">
                               {attachment.type.toUpperCase()} •{" "}
                               {attachment.size ? `${(attachment.size / 1024).toFixed(1)} KB` : ""}
                             </p>
@@ -982,14 +993,15 @@ const CreateCoursePage = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleRemoveAttachment(index)}
+                          className="text-gray-400 hover:text-red-500 hover:bg-gray-800"
                         >
-                          <X className="h-4 w-4 text-destructive" />
+                          <X className="h-4 w-4" />
                         </Button>
                       </div>
                     ))}
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-gray-400">
                   Upload PDF or ZIP files (max 50MB each). Students can download these files.
                 </p>
               </div>
@@ -999,10 +1011,10 @@ const CreateCoursePage = () => {
                 setLessonDialogOpen(false);
                 setLessonContent("");
                 setLessonAttachments([]);
-              }}>
+              }} className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white">
                 Cancel
               </Button>
-              <Button type="submit">Save</Button>
+              <Button type="submit" className="bg-cyan-600 hover:bg-cyan-700 text-white">Save</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -1010,59 +1022,60 @@ const CreateCoursePage = () => {
 
       {/* Enrollment Dialog */}
       <Dialog open={enrollmentDialogOpen} onOpenChange={setEnrollmentDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-[#1a1a1a] border-gray-800 text-white">
           <DialogHeader>
-            <DialogTitle>Manage Course Enrollment</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-white">Manage Course Enrollment</DialogTitle>
+            <DialogDescription className="text-gray-400">
               Search and select users to enroll in this course
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="user-search">Search Users</Label>
+              <Label htmlFor="user-search" className="text-white">Search Users</Label>
               <Input
                 id="user-search"
                 placeholder="Search by name or email..."
                 value={userSearchQuery}
                 onChange={(e) => setUserSearchQuery(e.target.value)}
+                className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
               />
             </div>
-            <div className="border rounded-lg max-h-96 overflow-y-auto">
+            <div className="border border-gray-800 rounded-lg max-h-96 overflow-y-auto bg-[#0f0f0f]">
               {filteredUsers.length === 0 ? (
-                <div className="p-4 text-center text-muted-foreground">
+                <div className="p-4 text-center text-gray-400">
                   No users found
                 </div>
               ) : (
-                <div className="divide-y">
+                <div className="divide-y divide-gray-800">
                   {filteredUsers.map((u) => {
                     const userId = u.id || u._id || "";
                     const isSelected = selectedUsers.includes(userId);
                     return (
                       <div
                         key={userId}
-                        className="flex items-center space-x-3 p-3 hover:bg-muted/50"
+                        className="flex items-center space-x-3 p-3 hover:bg-gray-800/50"
                       >
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={() => toggleUserSelection(userId)}
                         />
                         <div className="flex-1">
-                          <p className="font-medium">{u.username}</p>
-                          <p className="text-sm text-muted-foreground">{u.email}</p>
+                          <p className="font-medium text-white">{u.username}</p>
+                          <p className="text-sm text-gray-400">{u.email}</p>
                         </div>
-                        <span className="text-xs text-muted-foreground capitalize">{u.role}</span>
+                        <span className="text-xs text-gray-400 capitalize">{u.role}</span>
                       </div>
                     );
                   })}
                 </div>
               )}
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-gray-400">
               {selectedUsers.length} user{selectedUsers.length !== 1 ? "s" : ""} selected
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setEnrollmentDialogOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setEnrollmentDialogOpen(false)} className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white">
               Done
             </Button>
           </DialogFooter>

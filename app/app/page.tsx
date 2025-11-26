@@ -550,7 +550,7 @@ const HomePage = () => {
                       )}
                       <Link
                         href={`/courses/${course._id}`}
-                        className="px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2 text-sm transition-all hover:-translate-y-0.5 hover:shadow-glow w-full justify-center"
+                        className="px-6 py-3 rounded-[50px] bg-cyan-600 hover:bg-cyan-700 text-white font-semibold inline-flex items-center gap-2 text-sm transition-colors w-full justify-center"
                       >
                         <i className="fas fa-arrow-left" /> عرض التفاصيل
                       </Link>
@@ -559,7 +559,7 @@ const HomePage = () => {
                 ))}
               </div>
               <div className="text-center">
-                <Link href="/courses" className="px-9 py-4 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2.5 transition-all hover:-translate-y-1 hover:shadow-glow">
+                <Link href="/courses" className="px-9 py-4 rounded-[50px] bg-cyan-600 hover:bg-cyan-700 text-white font-semibold inline-flex items-center gap-2.5 transition-colors">
                   <i className="fas fa-arrow-left" /> عرض جميع الكورسات
                 </Link>
               </div>

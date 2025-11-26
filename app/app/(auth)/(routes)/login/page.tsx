@@ -70,57 +70,61 @@ const LoginPage = () => {
   // Show loading state while checking auth
   if (isCheckingAuth) {
     return (
-      <div className="w-full max-w-md space-y-8 p-8 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="w-full max-w-md flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-secondary-old" />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md space-y-8 p-8">
+    <div className="w-full max-w-md space-y-8 p-8 bg-glass-bg backdrop-blur-[10px] border border-glass-border rounded-2xl shadow-glow">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
-        <p className="text-muted-foreground">Sign in to your account</p>
+        <div className="flex items-center justify-center gap-2.5 text-2xl font-bold text-text-primary mb-2">
+          <i className="fas fa-shield-halved text-secondary-old text-[1.8rem]" />
+          <span>ShieldSec</span>
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight text-white">مرحباً بعودتك</h1>
+        <p className="text-text-secondary">قم بتسجيل الدخول إلى حسابك</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
+          <Label htmlFor="username" className="text-white">اسم المستخدم</Label>
           <Input
             id="username"
             type="text"
-            placeholder="Enter your username"
+            placeholder="أدخل اسم المستخدم"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
             disabled={isLoading}
-            className="h-11"
+            className="h-11 bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-white">كلمة المرور</Label>
           <Input
             id="password"
             type="password"
-            placeholder="Enter your password"
+            placeholder="أدخل كلمة المرور"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={isLoading}
-            className="h-11"
+            className="h-11 bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
           />
         </div>
         <Button
           type="submit"
-          className="w-full h-11"
+          className="w-full h-11 bg-cyan-600 hover:bg-cyan-700 text-white"
           disabled={isLoading}
         >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing in...
+              جاري تسجيل الدخول...
             </>
           ) : (
-            "Sign in"
+            "تسجيل الدخول"
           )}
         </Button>
       </form>

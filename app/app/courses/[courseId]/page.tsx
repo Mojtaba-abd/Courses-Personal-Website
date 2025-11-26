@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import axios from "axios";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -207,6 +208,12 @@ const CoursePage = () => {
 
   return (
     <div className="min-h-screen bg-darker-bg text-text-primary">
+      <div className="container mx-auto px-5 pt-8">
+        <Link href="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-secondary-old transition-colors mb-4">
+          <i className="fas fa-arrow-right" />
+          <span>العودة للصفحة الرئيسية</span>
+        </Link>
+      </div>
       {/* Hero Section */}
       <div className="relative w-full h-96 bg-gradient-cyber">
         {course.featuredImage && (
@@ -264,7 +271,7 @@ const CoursePage = () => {
                 <div className="space-y-3 mb-6">
                   {isEnrolled ? (
                     <button
-                      className="w-full px-6 py-3 rounded-[50px] bg-green-600 hover:bg-green-700 text-white font-semibold inline-flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-glow"
+                      className="w-full px-6 py-3 rounded-[50px] bg-green-600 hover:bg-green-700 text-white font-semibold inline-flex items-center justify-center gap-2 transition-colors"
                       onClick={() => {
                         if (firstLessonUrl) {
                           router.push(firstLessonUrl);
@@ -277,7 +284,7 @@ const CoursePage = () => {
                     </button>
                   ) : (
                     <button
-                      className="w-full px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-glow"
+                      className="w-full px-6 py-3 rounded-[50px] bg-cyan-600 hover:bg-cyan-700 text-white font-semibold inline-flex items-center justify-center gap-2 transition-colors"
                       onClick={() => setIsModalOpen(true)}
                     >
                       <i className="fas fa-user-plus" /> طلب الالتحاق
@@ -380,7 +387,7 @@ const CoursePage = () => {
               >
                 إلغاء
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="bg-gradient-2 hover:bg-gradient-2 hover:opacity-90 text-white">
+              <Button type="submit" disabled={isSubmitting} className="bg-cyan-600 hover:bg-cyan-700 text-white disabled:opacity-50">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />

@@ -155,21 +155,22 @@ const NewPostPage = () => {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto bg-[#0f0f0f] min-h-screen">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">New Post</h1>
+        <h1 className="text-3xl font-bold text-white">New Post</h1>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             onClick={() => setPreviewMode(!previewMode)}
+            className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white"
           >
             <Eye className="h-4 w-4 mr-2" />
             {previewMode ? "Edit" : "Preview"}
           </Button>
           <Link href="/dashboard/posts">
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white">Cancel</Button>
           </Link>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving} className="bg-cyan-600 hover:bg-cyan-700 text-white">
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -186,16 +187,16 @@ const NewPostPage = () => {
       </div>
 
       {previewMode ? (
-        <div className="space-y-6">
+        <div className="space-y-6 bg-[#1a1a1a] border border-gray-800 rounded-2xl p-6">
           <div>
             {category && (
-              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary mb-4">
+              <span className="inline-flex items-center rounded-full bg-cyan-600/20 px-3 py-1 text-sm font-medium text-cyan-500 mb-4">
                 {category}
               </span>
             )}
-            <h1 className="text-4xl font-bold mb-4">{title || "Untitled"}</h1>
+            <h1 className="text-4xl font-bold mb-4 text-white">{title || "Untitled"}</h1>
             {excerpt && (
-              <p className="text-xl text-muted-foreground mb-4">{excerpt}</p>
+              <p className="text-xl text-gray-400 mb-4">{excerpt}</p>
             )}
           </div>
           {imagePreview && (
@@ -204,74 +205,77 @@ const NewPostPage = () => {
                 src={imagePreview}
                 alt="Featured image"
                 fill
+                sizes="100vw"
                 className="object-cover"
               />
             </div>
           )}
           <div
-            className="prose prose-lg max-w-none"
+            className="prose prose-lg max-w-none text-white"
             dangerouslySetInnerHTML={{ __html: content }}
           />
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 bg-[#1a1a1a] border border-gray-800 rounded-2xl p-6">
           <div className="grid gap-2">
-            <Label htmlFor="title">Title *</Label>
+            <Label htmlFor="title" className="text-white">Title *</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter post title..."
-              className="text-lg"
+              className="text-lg bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
             />
             {title && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-400">
                 Slug: {generateSlug(title)}
               </p>
             )}
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="excerpt">Excerpt (optional)</Label>
+            <Label htmlFor="excerpt" className="text-white">Excerpt (optional)</Label>
             <Input
               id="excerpt"
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               placeholder="Brief summary of the post..."
+              className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="featured-image">Featured Image (optional)</Label>
+            <Label htmlFor="featured-image" className="text-white">Featured Image (optional)</Label>
             {imagePreview ? (
-              <div className="relative w-full h-48 mb-2 border rounded-lg overflow-hidden">
+              <div className="relative w-full h-48 mb-2 border border-gray-800 rounded-lg overflow-hidden">
                 <Image
                   src={imagePreview}
                   alt="Featured image preview"
                   fill
+                  sizes="100vw"
                   className="object-cover"
                 />
                 <Button
                   type="button"
                   variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2"
+                  className="absolute top-2 right-2 bg-red-600 hover:bg-red-700"
                   onClick={removeImage}
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center justify-center w-full h-48 border-2 border-dashed rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+              <div className="flex items-center justify-center w-full h-48 border-2 border-dashed border-gray-800 rounded-lg bg-[#0f0f0f] hover:bg-gray-900 transition-colors">
                 <label
                   htmlFor="featured-image"
                   className="flex flex-col items-center justify-center w-full h-full cursor-pointer"
                 >
-                  <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">
+                  <ImageIcon className="h-10 w-10 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-400">
                     {isUploading ? "Uploading..." : "Click to upload or drag and drop"}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                     PNG, JPG, GIF up to 10MB
                   </p>
                 </label>
@@ -288,12 +292,12 @@ const NewPostPage = () => {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="category">Category (optional)</Label>
+            <Label htmlFor="category" className="text-white">Category (optional)</Label>
             <select
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex h-10 w-full rounded-md border border-gray-800 bg-[#0f0f0f] px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
             >
               <option value="">Select category</option>
               {CATEGORIES.map((cat) => (
@@ -305,7 +309,7 @@ const NewPostPage = () => {
           </div>
 
           <div className="grid gap-2">
-            <Label>Content *</Label>
+            <Label className="text-white">Content *</Label>
             <RichTextEditor value={content} onChange={setContent} />
           </div>
 
@@ -315,7 +319,7 @@ const NewPostPage = () => {
               checked={isPublished}
               onCheckedChange={(checked) => setIsPublished(checked as boolean)}
             />
-            <Label htmlFor="published" className="cursor-pointer">
+            <Label htmlFor="published" className="cursor-pointer text-white">
               Publish immediately
             </Label>
           </div>

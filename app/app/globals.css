@@ -181,4 +181,61 @@ body,
   background: #2a2a2a;
 }
 
+/* Rich Text Editor Dark Theme */
+.rich-text-editor-dark .ql-toolbar.ql-snow {
+  border: 1px solid #1f2937;
+  border-bottom: none;
+  background: #1a1a1a;
+  padding: 12px;
+}
+.rich-text-editor-dark .ql-toolbar.ql-snow .ql-stroke {
+  stroke: #9ca3af;
+}
+.rich-text-editor-dark .ql-toolbar.ql-snow .ql-fill {
+  fill: #9ca3af;
+}
+.rich-text-editor-dark .ql-toolbar.ql-snow .ql-picker-label {
+  color: #9ca3af;
+}
+.rich-text-editor-dark .ql-toolbar.ql-snow .ql-picker-options {
+  background: #1a1a1a;
+  border: 1px solid #1f2937;
+}
+.rich-text-editor-dark .ql-toolbar.ql-snow .ql-picker-item {
+  color: #9ca3af;
+}
+.rich-text-editor-dark .ql-toolbar.ql-snow .ql-picker-item:hover {
+  color: #ffffff;
+}
+.rich-text-editor-dark .ql-toolbar.ql-snow button:hover,
+.rich-text-editor-dark .ql-toolbar.ql-snow button:focus,
+.rich-text-editor-dark .ql-toolbar.ql-snow button.ql-active {
+  color: #00d4ff;
+}
+.rich-text-editor-dark .ql-toolbar.ql-snow button:hover .ql-stroke,
+.rich-text-editor-dark .ql-toolbar.ql-snow button:focus .ql-stroke,
+.rich-text-editor-dark .ql-toolbar.ql-snow button.ql-active .ql-stroke {
+  stroke: #00d4ff;
+}
+.rich-text-editor-dark .ql-toolbar.ql-snow button:hover .ql-fill,
+.rich-text-editor-dark .ql-toolbar.ql-snow button:focus .ql-fill,
+.rich-text-editor-dark .ql-toolbar.ql-snow button.ql-active .ql-fill {
+  fill: #00d4ff;
+}
+.rich-text-editor-dark .ql-container.ql-snow {
+  border: 1px solid #1f2937;
+  background: #0f0f0f;
+}
+.rich-text-editor-dark .ql-editor {
+  color: #ffffff;
+  min-height: 400px;
+}
+.rich-text-editor-dark .ql-editor.ql-blank::before {
+  color: #6b7280;
+}
+.rich-text-editor-dark .ql-snow .ql-editor pre.ql-syntax {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
 @import "~@uploadthing/react/styles.css";

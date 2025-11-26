@@ -90,7 +90,7 @@ export const RichTextEditor = ({ onChange, value }: RichTextEditorProps) => {
   );
 
   return (
-    <div className="bg-white">
+    <div className="bg-[#0f0f0f] border border-gray-800 rounded-lg overflow-hidden rich-text-editor-dark">
       <ReactQuill
         ref={quillRef}
         theme="snow"
