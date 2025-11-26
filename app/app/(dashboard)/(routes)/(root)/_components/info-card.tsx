@@ -11,13 +11,13 @@ interface infoCardProps{
 
 export const InfoCard = ({ icon: Icon, label, numberOfItems, variant}: infoCardProps) => {
     return(
-        <div className="border rounded-md flex items-center gap-x-2 p-3">
+        <div className="border border-gray-800 rounded-md flex items-center gap-x-2 p-3 bg-[#1a1a1a]">
             <IconBadge icon={Icon} variant={variant} />
             <div className="">
-        <p className="font-medium ">
+        <p className="font-medium text-white">
             {label}
         </p>
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-400 text-sm">
             {numberOfItems} {numberOfItems === 1? "Course" : "Courses"}
         </p>
             </div>

@@ -3,11 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Play, Download, FileText, Clock, Lock } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -346,22 +341,22 @@ const LessonPage = () => {
 
   if (isLoading || authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-darker-bg flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-secondary-old" />
       </div>
     );
   }
 
   if (!lesson || !chapter || !course || !isEnrolled) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-darker-bg flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-          <p className="text-muted-foreground mb-4">You need to be enrolled to view this lesson.</p>
-          <Button onClick={() => router.push(`/courses/${courseId}`)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Course
-          </Button>
+          <h1 className="text-2xl font-bold mb-4 text-white">الوصول مرفوض</h1>
+          <p className="text-text-secondary mb-4">يجب أن تكون مسجلاً لعرض هذا الدرس.</p>
+          <button onClick={() => router.push(`/courses/${courseId}`)} className="px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-glow">
+            <i className="fas fa-arrow-right" />
+            العودة للدورة
+          </button>
         </div>
       </div>
     );
@@ -380,25 +375,24 @@ const LessonPage = () => {
   const videoId = videoUrl ? getYouTubeVideoId(videoUrl) : null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-darker-bg text-text-primary">
       {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
+      <div className="border-b border-gray-800 bg-[#1a1a1a]">
+        <div className="container mx-auto px-5 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={() => router.push(`/courses/${courseId}`)}
+                className="px-4 py-2 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2 text-sm transition-all hover:-translate-y-0.5 hover:shadow-glow"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Course
-              </Button>
-              <Separator orientation="vertical" className="h-6" />
+                <i className="fas fa-arrow-right" />
+                العودة للدورة
+              </button>
+              <div className="h-6 w-px bg-gray-800" />
               <div>
-                <h1 className="text-lg font-semibold">{course.title}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {chapter.title} • Lesson {currentLessonIndex + 1} of {allLessons.length}
+                <h1 className="text-lg font-semibold text-white">{course.title}</h1>
+                <p className="text-sm text-text-secondary">
+                  {chapter.title} • الدرس {currentLessonIndex + 1} من {allLessons.length}
                 </p>
               </div>
             </div>
@@ -406,25 +400,25 @@ const LessonPage = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-5 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>{lesson.title}</CardTitle>
+            <div className="p-6 bg-glass-bg backdrop-blur-[10px] border border-glass-border rounded-2xl">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-white mb-2">{lesson.title}</h2>
                 {lesson.duration && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-sm text-text-secondary">
+                    <i className="fas fa-clock text-secondary-old" />
                     <span>{lesson.duration}</span>
                   </div>
                 )}
-              </CardHeader>
-              <CardContent className="space-y-6">
+              </div>
+              <div className="space-y-6">
                 {/* Video */}
                 {!videoId ? (
-                  <div className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
-                    <p className="text-gray-500">لا يوجد فيديو لهذا الدرس</p>
+                  <div className="aspect-video bg-gray-800 rounded-lg flex items-center justify-center">
+                    <p className="text-text-secondary">لا يوجد فيديو لهذا الدرس</p>
                   </div>
                 ) : (
                   <div
@@ -445,17 +439,17 @@ const LessonPage = () => {
                 {/* Description */}
                 {lesson.description && (
                   <div>
-                    <h3 className="font-semibold mb-2">Description</h3>
-                    <p className="text-muted-foreground whitespace-pre-wrap">{lesson.description}</p>
+                    <h3 className="font-semibold mb-2 text-white">الوصف</h3>
+                    <p className="text-text-secondary whitespace-pre-wrap">{lesson.description}</p>
                   </div>
                 )}
 
                 {/* Content */}
                 {lesson.content && (
                   <div>
-                    <h3 className="font-semibold mb-2">Content</h3>
+                    <h3 className="font-semibold mb-2 text-white">المحتوى</h3>
                     <div
-                      className="prose prose-sm max-w-none"
+                      className="prose prose-sm max-w-none prose-invert prose-headings:text-white prose-p:text-text-secondary prose-strong:text-white prose-a:text-secondary-old"
                       dangerouslySetInnerHTML={{ __html: lesson.content }}
                     />
                   </div>
@@ -464,9 +458,9 @@ const LessonPage = () => {
                 {/* Attachments */}
                 {lesson.attachments && lesson.attachments.length > 0 && (
                   <div>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Attachments
+                    <h3 className="font-semibold mb-4 flex items-center gap-2 text-white">
+                      <i className="fas fa-file-alt text-secondary-old" />
+                      المرفقات
                     </h3>
                     <div className="space-y-2">
                       {lesson.attachments.map((attachment, idx) => (
@@ -475,100 +469,96 @@ const LessonPage = () => {
                           href={attachment.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                          className="flex items-center gap-3 p-3 border border-glass-border rounded-lg hover:bg-gray-800 transition-colors bg-glass-bg"
                         >
-                          <Download className="h-5 w-5 text-primary" />
+                          <i className="fas fa-download text-secondary-old" />
                           <div className="flex-1">
-                            <p className="font-medium text-sm">{attachment.name || `Attachment ${idx + 1}`}</p>
-                            <p className="text-xs text-muted-foreground">{attachment.type || "File"}</p>
+                            <p className="font-medium text-sm text-white">{attachment.name || `مرفق ${idx + 1}`}</p>
+                            <p className="text-xs text-text-secondary">{attachment.type || "ملف"}</p>
                           </div>
-                          <Button variant="outline" size="sm">
-                            Download
-                          </Button>
+                          <button className="px-4 py-2 rounded-[50px] bg-gradient-2 text-white font-semibold text-xs transition-all hover:-translate-y-0.5 hover:shadow-glow">
+                            <i className="fas fa-download ml-1" /> تحميل
+                          </button>
                         </a>
                       ))}
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Navigation */}
             <div className="flex items-center justify-between mt-6">
-              <Button
-                variant="outline"
+              <button
                 onClick={() => navigateToLesson(currentLessonIndex - 1)}
                 disabled={currentLessonIndex === 0}
+                className="px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2 text-sm transition-all hover:-translate-y-0.5 hover:shadow-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Previous Lesson
-              </Button>
-              <Button
-                variant="outline"
+                <i className="fas fa-arrow-right" />
+                الدرس السابق
+              </button>
+              <button
                 onClick={() => navigateToLesson(currentLessonIndex + 1)}
                 disabled={currentLessonIndex >= allLessons.length - 1}
+                className="px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2 text-sm transition-all hover:-translate-y-0.5 hover:shadow-glow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
-                Next Lesson
-                <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
-              </Button>
+                الدرس التالي
+                <i className="fas fa-arrow-left" />
+              </button>
             </div>
           </div>
 
           {/* Sidebar - Course Content */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle className="text-base">Course Content</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="max-h-[600px] overflow-y-auto">
-                  {chaptersWithLessons.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No chapters available
-                    </p>
-                  ) : (
-                    <Accordion type="multiple" className="w-full" defaultValue={[chapterId]}>
-                      {chaptersWithLessons.map(({ chapter: ch, lessons }) => (
-                      <AccordionItem key={ch._id} value={ch._id}>
-                        <AccordionTrigger className="hover:no-underline text-left">
-                          <div className="flex flex-col items-start gap-1">
-                            <span className="font-medium text-sm">{ch.title}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {lessons.length} {lessons.length === 1 ? "lesson" : "lessons"}
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="space-y-1 pt-2">
-                            {lessons.map((l) => {
-                              const isActive = l._id === lessonId;
-                              return (
-                                <Link
-                                  key={l._id}
-                                  href={`/courses/${courseId}/chapters/${ch._id}/lessons/${l._id}`}
-                                  className={`flex items-center gap-2 p-2 rounded text-sm transition-colors ${
-                                    isActive
-                                      ? "bg-primary text-primary-foreground font-medium"
-                                      : "hover:bg-muted"
-                                  }`}
-                                >
-                                  <Play className="h-3 w-3 flex-shrink-0" />
-                                  <span className="truncate flex-1">{l.title}</span>
-                                  {!l.isFree && (
-                                    <Lock className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
-                                  )}
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                      ))}
-                    </Accordion>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="sticky top-4 p-6 bg-glass-bg backdrop-blur-[10px] border border-glass-border rounded-2xl">
+              <h3 className="text-base font-bold text-white mb-4">محتوى الدورة</h3>
+              <div className="max-h-[600px] overflow-y-auto">
+                {chaptersWithLessons.length === 0 ? (
+                  <p className="text-sm text-text-secondary text-center py-4">
+                    لا توجد فصول متاحة
+                  </p>
+                ) : (
+                  <Accordion type="multiple" className="w-full" defaultValue={[chapterId]}>
+                    {chaptersWithLessons.map(({ chapter: ch, lessons }) => (
+                    <AccordionItem key={ch._id} value={ch._id} className="border-gray-800">
+                      <AccordionTrigger className="hover:no-underline text-left text-white">
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="font-medium text-sm">{ch.title}</span>
+                          <span className="text-xs text-text-secondary">
+                            {lessons.length} {lessons.length === 1 ? "درس" : "دروس"}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-1 pt-2">
+                          {lessons.map((l) => {
+                            const isActive = l._id === lessonId;
+                            return (
+                              <Link
+                                key={l._id}
+                                href={`/courses/${courseId}/chapters/${ch._id}/lessons/${l._id}`}
+                                className={`flex items-center gap-2 p-2 rounded text-sm transition-colors ${
+                                  isActive
+                                    ? "bg-cyan-600 text-white font-medium"
+                                    : "hover:bg-gray-800 text-text-secondary"
+                                }`}
+                              >
+                                <i className="fas fa-play text-xs flex-shrink-0" />
+                                <span className="truncate flex-1">{l.title}</span>
+                                {!l.isFree && (
+                                  <i className="fas fa-lock text-xs flex-shrink-0 text-text-secondary" />
+                                )}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    ))}
+                  </Accordion>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -55,10 +55,10 @@ const CoursesPage = () => {
 
   return (
     <>
-      <div className="px-6 pt-6 md:hidden md:mb-0 block">
+      <div className="px-6 pt-6 md:hidden md:mb-0 block bg-[#0f0f0f]">
         <SearchInput /> 
       </div>
-      <div className="p-6">
+      <div className="p-6 bg-[#0f0f0f] min-h-screen">
         <Categories items={categories} />
         <CoursesList items={courses} />
       </div>

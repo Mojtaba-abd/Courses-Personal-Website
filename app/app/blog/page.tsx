@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
-import { Loader2, Calendar } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 interface Post {
   _id?: string;
@@ -13,6 +12,7 @@ interface Post {
   title: string;
   slug: string;
   excerpt: string;
+  content?: string;
   featuredImage?: string;
   category?: string;
   publishedAt?: string;
@@ -73,64 +73,68 @@ const BlogPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-16">
+    <div className="min-h-screen bg-darker-bg text-text-primary">
+      <div className="container mx-auto px-5 py-24">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Blog</h1>
-            <p className="text-muted-foreground text-lg">
-              Latest articles and updates
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-cyber bg-clip-text text-transparent">
+              <i className="fas fa-blog ml-4 text-secondary-old" /> المدونة
+            </h1>
+            <p className="text-text-secondary text-lg">
+              آخر المقالات والأخبار
             </p>
           </div>
 
           {posts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No posts available yet.</p>
+              <p className="text-text-secondary">لا توجد مقالات متاحة حالياً.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {posts.map((post) => {
                 const postId = post._id || post.id || "";
                 const postSlug = post.slug || postId;
                 return (
                   <Link key={postId} href={`/blog/${postSlug}`}>
-                    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
+                    <div className="overflow-hidden transition-all hover:-translate-y-2.5 hover:shadow-glow bg-glass-bg backdrop-blur-[10px] border border-glass-border rounded-2xl">
                       {post.featuredImage && (
-                        <div className="relative w-full h-48 bg-muted">
+                        <div className="w-full h-48 bg-gradient-cyber flex items-center justify-center text-5xl text-white/30 relative overflow-hidden">
                           <Image
                             src={post.featuredImage}
                             alt={post.title}
                             fill
+                            sizes="100vw"
                             className="object-cover"
                           />
+                          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-darker-bg" />
                         </div>
                       )}
-                      <CardContent className="p-6 flex-1 flex flex-col">
+                      <div className="p-6">
                         {post.category && (
-                          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary mb-2 w-fit">
+                          <span className="inline-block px-3 py-1 rounded-full bg-gradient-2 text-white text-xs mb-3">
                             {post.category}
                           </span>
                         )}
-                        <h2 className="text-xl font-semibold mb-2 line-clamp-2">
+                        <h2 className="text-xl font-semibold mb-4 text-white line-clamp-2">
                           {post.title}
                         </h2>
                         {post.excerpt ? (
-                          <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                          <p className="text-sm text-text-secondary mb-4 line-clamp-3">
                             {post.excerpt}
                           </p>
                         ) : post.content ? (
-                          <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                          <p className="text-sm text-text-secondary mb-4 line-clamp-3">
                             {stripHtml(post.content)}
                           </p>
                         ) : null}
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto">
-                          <Calendar className="h-3 w-3" />
+                        <div className="flex items-center gap-2 text-xs text-text-secondary mt-auto">
+                          <i className="fas fa-calendar text-secondary-old" />
                           <span>
                             {formatDate(post.publishedAt || post.createdAt)}
                           </span>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   </Link>
                 );
               })}

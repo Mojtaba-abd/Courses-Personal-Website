@@ -130,9 +130,11 @@ body,
   body {
     @apply bg-darker-bg text-text-primary;
     font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0f0f0f;
   }
   html {
     scroll-behavior: smooth;
+    background-color: #0f0f0f;
   }
   body[dir="rtl"] {
     font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -158,6 +160,25 @@ body,
     padding: 15px 0;
     box-shadow: 0 8px 32px rgba(0, 102, 255, 0.15);
   }
+}
+
+/* Custom scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f0f0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a2a2a;
 }
 
 @import "~@uploadthing/react/styles.css";

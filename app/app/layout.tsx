@@ -25,7 +25,10 @@ export default function RootLayout({
         <ConfettiProvider />
         <ToasterProvider />
         {children}
-        <Script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js" strategy="afterInteractive" />
+        <Script 
+          src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js" 
+          strategy="afterInteractive"
+        />
         <Script src="https://unpkg.com/aos@2.3.1/dist/aos.js" strategy="afterInteractive" />
       </body>
     </html>

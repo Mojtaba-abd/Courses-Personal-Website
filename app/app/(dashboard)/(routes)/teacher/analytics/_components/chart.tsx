@@ -20,12 +20,12 @@ interface chartProps{
 
 export const Chart = ({data}: chartProps) => {
     return(
-      <Card>
+      <div className="p-6 bg-[#1a1a1a] border border-gray-800 rounded-2xl">
         <ResponsiveContainer width="100%" height={350}>
             <BarChart data={data} >
                 <XAxis
                 dataKey="name"
-                stroke="#888888"
+                stroke="#a8b2d1"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -35,14 +35,15 @@ export const Chart = ({data}: chartProps) => {
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value) => `$${value}`}
+                stroke="#a8b2d1"
                 />
 
                 <Bar 
                 dataKey="total"
-                fill="#0369af"
+                fill="#00d4ff"
                 radius={[4,4,0,0]} />
             </BarChart>
         </ResponsiveContainer>
-      </Card>
+      </div>
     )
 }

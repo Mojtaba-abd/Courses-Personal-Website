@@ -56,7 +56,11 @@ const CoursesPage = () => {
   const columns = createColumns(fetchCourses);
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-[#0f0f0f] min-h-screen">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2 text-white">Courses</h1>
+        <p className="text-gray-400">Manage your courses</p>
+      </div>
       <DataTable columns={columns} data={courses} />
     </div>
   );

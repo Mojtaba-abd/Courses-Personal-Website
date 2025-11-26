@@ -180,33 +180,33 @@ const UsersPage = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-[#0f0f0f] min-h-screen">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Users</h1>
-          <p className="text-muted-foreground">Manage all users in the system</p>
+          <h1 className="text-3xl font-bold mb-2 text-white">Users</h1>
+          <p className="text-gray-400">Manage all users in the system</p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
+        <Button onClick={() => setCreateDialogOpen(true)} className="bg-cyan-600 hover:bg-cyan-700 text-white">
           <Plus className="h-4 w-4 mr-2" />
           Create User
         </Button>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
+      <div className="bg-[#1a1a1a] border border-gray-800 rounded-2xl overflow-hidden">
+        <div className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="border-gray-800 hover:bg-gray-800/50">
+                <TableHead className="text-gray-300">Name</TableHead>
+                <TableHead className="text-gray-300">Email</TableHead>
+                <TableHead className="text-gray-300">Role</TableHead>
+                <TableHead className="text-right text-gray-300">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableRow className="border-gray-800">
+                  <TableCell colSpan={4} className="text-center text-gray-400">
                     No users found
                   </TableCell>
                 </TableRow>
@@ -214,11 +214,11 @@ const UsersPage = () => {
                 users.map((u) => {
                   const userId = u.id || u._id || "";
                   return (
-                    <TableRow key={userId}>
-                      <TableCell className="font-medium">{u.username}</TableCell>
-                      <TableCell>{u.email}</TableCell>
+                    <TableRow key={userId} className="border-gray-800 hover:bg-gray-800/50">
+                      <TableCell className="font-medium text-white">{u.username}</TableCell>
+                      <TableCell className="text-gray-300">{u.email}</TableCell>
                       <TableCell>
-                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary capitalize">
+                        <span className="inline-flex items-center rounded-full bg-cyan-600/20 px-2.5 py-0.5 text-xs font-medium text-cyan-500 capitalize">
                           {u.role}
                         </span>
                       </TableCell>
@@ -228,6 +228,7 @@ const UsersPage = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => openEditDialog(u)}
+                            className="text-gray-400 hover:text-white hover:bg-gray-800"
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -236,8 +237,9 @@ const UsersPage = () => {
                             size="icon"
                             onClick={() => handleDeleteUser(userId)}
                             disabled={!userId || userId === user?.id}
+                            className="text-gray-400 hover:text-red-500 hover:bg-gray-800"
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -247,42 +249,44 @@ const UsersPage = () => {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Create User Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white">
           <form onSubmit={handleCreateUser}>
             <DialogHeader>
-              <DialogTitle>Create User</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-white">Create User</DialogTitle>
+              <DialogDescription className="text-gray-400">
                 Add a new user to the system. All fields are required.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username" className="text-white">Username</Label>
                 <Input
                   id="username"
                   name="username"
                   placeholder="johndoe"
                   required
                   minLength={3}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-white">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   placeholder="john@example.com"
                   required
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-white">Password</Label>
                 <Input
                   id="password"
                   name="password"
@@ -290,15 +294,16 @@ const UsersPage = () => {
                   placeholder="••••••••"
                   required
                   minLength={6}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="role">Role</Label>
+                <Label htmlFor="role" className="text-white">Role</Label>
                 <select
                   id="role"
                   name="role"
                   required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex h-10 w-full rounded-md border border-gray-800 bg-[#0f0f0f] px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
                 >
                   <option value="">Select role</option>
                   <option value="student">Student</option>
@@ -308,10 +313,10 @@ const UsersPage = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)} className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white">
                 Cancel
               </Button>
-              <Button type="submit">Create User</Button>
+              <Button type="submit" className="bg-cyan-600 hover:bg-cyan-700 text-white">Create User</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -319,17 +324,17 @@ const UsersPage = () => {
 
       {/* Edit User Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white">
           <form onSubmit={handleEditUser}>
             <DialogHeader>
-              <DialogTitle>Edit User</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-white">Edit User</DialogTitle>
+              <DialogDescription className="text-gray-400">
                 Update user information. Leave password blank to keep current password.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="edit-username">Username</Label>
+                <Label htmlFor="edit-username" className="text-white">Username</Label>
                 <Input
                   id="edit-username"
                   name="username"
@@ -337,10 +342,11 @@ const UsersPage = () => {
                   required
                   minLength={3}
                   defaultValue={editingUser?.username || ""}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-email">Email</Label>
+                <Label htmlFor="edit-email" className="text-white">Email</Label>
                 <Input
                   id="edit-email"
                   name="email"
@@ -348,26 +354,28 @@ const UsersPage = () => {
                   placeholder="john@example.com"
                   required
                   defaultValue={editingUser?.email || ""}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-password">Password (leave blank to keep current)</Label>
+                <Label htmlFor="edit-password" className="text-white">Password (leave blank to keep current)</Label>
                 <Input
                   id="edit-password"
                   name="password"
                   type="password"
                   placeholder="••••••••"
                   minLength={6}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-role">Role</Label>
+                <Label htmlFor="edit-role" className="text-white">Role</Label>
                 <select
                   id="edit-role"
                   name="role"
                   required
                   defaultValue={editingUser?.role || ""}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex h-10 w-full rounded-md border border-gray-800 bg-[#0f0f0f] px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
                 >
                   <option value="">Select role</option>
                   <option value="student">Student</option>
@@ -380,10 +388,10 @@ const UsersPage = () => {
               <Button type="button" variant="outline" onClick={() => {
                 setEditDialogOpen(false);
                 setEditingUser(null);
-              }}>
+              }} className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white">
                 Cancel
               </Button>
-              <Button type="submit">Save Changes</Button>
+              <Button type="submit" className="bg-cyan-600 hover:bg-cyan-700 text-white">Save Changes</Button>
             </DialogFooter>
           </form>
         </DialogContent>

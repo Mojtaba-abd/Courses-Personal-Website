@@ -8,16 +8,16 @@ interface dataCardProps {
 }
 
 export const DataCard = ({ label, value, shouldFormat }: dataCardProps) => {
-  return ( <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">
+  return ( <div className="p-6 bg-[#1a1a1a] border border-gray-800 rounded-2xl">
+    <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <h3 className="text-sm font-medium text-gray-400">
         {label}
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-        <div className="text-2xl font-bold">
+      </h3>
+    </div>
+    <div className="pt-2">
+        <div className="text-2xl font-bold text-white">
             {shouldFormat? formatPrice(value) : value}
         </div>
-    </CardContent>
-  </Card>);
+    </div>
+  </div>);
 };

@@ -42,6 +42,7 @@ export const createColumns = (onDelete?: () => void): ColumnDef<course>[] => [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="text-gray-300 hover:text-white hover:bg-gray-800"
         >
           Title
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -90,7 +91,7 @@ export const createColumns = (onDelete?: () => void): ColumnDef<course>[] => [
 
         return(
             <div className="flex items-center justify-center">
-            <Badge className={cn("px-3",isPublished && "bg-sky-700")}>
+            <Badge className={cn("px-3",isPublished ? "bg-green-600 text-white" : "bg-gray-600 text-white")}>
                 {isPublished ? "Published" : "Draft"}
             </Badge>
             </div>
@@ -135,23 +136,23 @@ export const createColumns = (onDelete?: () => void): ColumnDef<course>[] => [
             <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-4 w-8 p-0">
+                    <Button variant="ghost" className="h-4 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800">
                         <span className="sr-only">
                             Open menu
                         </span>
                         <MoreHorizontal className="h-4 w-4"/>
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-[#1a1a1a] border-gray-800">
                     <Link href={`/dashboard/teacher/courses/${_id}`}>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem className="text-gray-300 hover:bg-gray-800 hover:text-white">
                         <Pencil className="h-4 w-4 mr-2" />
                         Edit
                     </DropdownMenuItem>
                     </Link>
                     <DropdownMenuItem
                         onClick={() => setDeleteDialogOpen(true)}
-                        className="text-destructive"
+                        className="text-red-500 hover:bg-gray-800 hover:text-red-400"
                     >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete

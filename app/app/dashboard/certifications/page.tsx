@@ -255,35 +255,35 @@ const CertificationsPage = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-[#0f0f0f] min-h-screen">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Certifications</h1>
-          <p className="text-muted-foreground">Manage your professional certificates</p>
+          <h1 className="text-3xl font-bold mb-2 text-white">Certifications</h1>
+          <p className="text-gray-400">Manage your professional certificates</p>
         </div>
-        <Button onClick={openCreateDialog}>
+        <Button onClick={openCreateDialog} className="bg-cyan-600 hover:bg-cyan-700 text-white">
           <Plus className="h-4 w-4 mr-2" />
           Add Certificate
         </Button>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
+      <div className="bg-[#1a1a1a] border border-gray-800 rounded-2xl overflow-hidden">
+        <div className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Image</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Issuer</TableHead>
-                <TableHead>Issue Date</TableHead>
-                <TableHead>Credential URL</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="border-gray-800 hover:bg-gray-800/50">
+                <TableHead className="text-gray-300">Image</TableHead>
+                <TableHead className="text-gray-300">Title</TableHead>
+                <TableHead className="text-gray-300">Issuer</TableHead>
+                <TableHead className="text-gray-300">Issue Date</TableHead>
+                <TableHead className="text-gray-300">Credential URL</TableHead>
+                <TableHead className="text-right text-gray-300">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {certificates.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableRow className="border-gray-800">
+                  <TableCell colSpan={6} className="text-center text-gray-400">
                     No certificates found. Click "Add Certificate" to get started.
                   </TableCell>
                 </TableRow>
@@ -291,7 +291,7 @@ const CertificationsPage = () => {
                 certificates.map((cert) => {
                   const certId = cert._id || cert.id || "";
                   return (
-                    <TableRow key={certId}>
+                    <TableRow key={certId} className="border-gray-800 hover:bg-gray-800/50">
                       <TableCell>
                         {cert.imageUrl ? (
                           <div className="relative w-16 h-16">
@@ -299,30 +299,31 @@ const CertificationsPage = () => {
                               src={cert.imageUrl}
                               alt={cert.title}
                               fill
+                              sizes="100vw"
                               className="object-cover rounded"
                             />
                           </div>
                         ) : (
-                          <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                          <div className="w-16 h-16 bg-gray-800 rounded flex items-center justify-center text-xs text-gray-400">
                             No Image
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="font-medium">{cert.title}</TableCell>
-                      <TableCell>{cert.issuer || "N/A"}</TableCell>
-                      <TableCell>{formatDate(cert.issueDate)}</TableCell>
+                      <TableCell className="font-medium text-white">{cert.title}</TableCell>
+                      <TableCell className="text-gray-300">{cert.issuer || "N/A"}</TableCell>
+                      <TableCell className="text-gray-300">{formatDate(cert.issueDate)}</TableCell>
                       <TableCell>
                         {cert.certificateUrl ? (
                           <a
                             href={cert.certificateUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-primary hover:underline"
+                            className="flex items-center gap-1 text-cyan-500 hover:underline"
                           >
                             View <ExternalLink className="h-3 w-3" />
                           </a>
                         ) : (
-                          <span className="text-muted-foreground">N/A</span>
+                          <span className="text-gray-400">N/A</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -331,6 +332,7 @@ const CertificationsPage = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => openEditDialog(cert)}
+                            className="text-gray-400 hover:text-white hover:bg-gray-800"
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -338,8 +340,9 @@ const CertificationsPage = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => openDeleteDialog(cert)}
+                            className="text-gray-400 hover:text-red-500 hover:bg-gray-800"
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -349,8 +352,8 @@ const CertificationsPage = () => {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Create/Edit Certificate Dialog */}
       <Dialog
@@ -365,13 +368,13 @@ const CertificationsPage = () => {
           }
         }}
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border-gray-800 text-white">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-white">
                 {editingCertificate ? "Edit Certificate" : "Add Certificate"}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-gray-400">
                 {editingCertificate
                   ? "Update certificate information"
                   : "Add a new professional certificate"}
@@ -379,27 +382,29 @@ const CertificationsPage = () => {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title" className="text-white">Title *</Label>
                 <Input
                   id="title"
                   name="title"
                   placeholder="e.g., Cisco CCNA"
                   required
                   defaultValue={editingCertificate?.title || ""}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="issuer">Issuer *</Label>
+                <Label htmlFor="issuer" className="text-white">Issuer *</Label>
                 <Input
                   id="issuer"
                   name="issuer"
                   placeholder="e.g., Cisco"
                   required
                   defaultValue={editingCertificate?.issuer || ""}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="issueDate">Issue Date *</Label>
+                <Label htmlFor="issueDate" className="text-white">Issue Date *</Label>
                 <Input
                   id="issueDate"
                   name="issueDate"
@@ -410,60 +415,63 @@ const CertificationsPage = () => {
                       ? new Date(editingCertificate.issueDate).toISOString().split("T")[0]
                       : ""
                   }
+                  className="bg-[#0f0f0f] border-gray-800 text-white"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="certificateUrl">Credential URL (optional)</Label>
+                <Label htmlFor="certificateUrl" className="text-white">Credential URL (optional)</Label>
                 <Input
                   id="certificateUrl"
                   name="certificateUrl"
                   type="url"
                   placeholder="https://www.credly.com/badges/..."
                   defaultValue={editingCertificate?.certificateUrl || ""}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="description">Description (optional)</Label>
+                <Label htmlFor="description" className="text-white">Description (optional)</Label>
                 <textarea
                   id="description"
                   name="description"
                   placeholder="Brief description of the certificate..."
                   rows={3}
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex min-h-[80px] w-full rounded-md border border-gray-800 bg-[#0f0f0f] px-3 py-2 text-sm text-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
                   defaultValue={editingCertificate?.description || ""}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="certificate-image">Certificate Image *</Label>
+                <Label htmlFor="certificate-image" className="text-white">Certificate Image *</Label>
                 {imagePreview ? (
-                  <div className="relative w-full h-48 mb-2 border rounded-lg overflow-hidden">
+                  <div className="relative w-full h-48 mb-2 border border-gray-800 rounded-lg overflow-hidden">
                     <Image
                       src={imagePreview}
                       alt="Certificate preview"
                       fill
+                      sizes="100vw"
                       className="object-contain"
                     />
                     <Button
                       type="button"
                       variant="destructive"
                       size="icon"
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 bg-red-600 hover:bg-red-700"
                       onClick={removeImage}
                     >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center w-full h-48 border-2 border-dashed rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+                  <div className="flex items-center justify-center w-full h-48 border-2 border-dashed border-gray-800 rounded-lg bg-[#0f0f0f] hover:bg-gray-900 transition-colors">
                     <label
                       htmlFor="certificate-image"
                       className="flex flex-col items-center justify-center w-full h-full cursor-pointer"
                     >
-                      <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">
+                      <ImageIcon className="h-10 w-10 text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-400">
                         {isUploading ? "Uploading..." : "Click to upload or drag and drop"}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         PNG, JPG, GIF up to 10MB
                       </p>
                     </label>
@@ -504,10 +512,11 @@ const CertificationsPage = () => {
                   setImageUrl("");
                   setImagePreview("");
                 }}
+                className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white"
               >
                 Cancel
               </Button>
-              <Button type="submit">Save</Button>
+              <Button type="submit" className="bg-cyan-600 hover:bg-cyan-700 text-white">Save</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -515,20 +524,20 @@ const CertificationsPage = () => {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-[#1a1a1a] border-gray-800 text-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-white">Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
               This action cannot be undone. This will permanently delete the certificate
               "{deletingCertificate?.title}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting} className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-red-600 text-white hover:bg-red-700"
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>

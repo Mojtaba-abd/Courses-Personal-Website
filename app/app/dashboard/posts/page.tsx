@@ -131,35 +131,35 @@ const PostsPage = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-[#0f0f0f] min-h-screen">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Blog Posts</h1>
-          <p className="text-muted-foreground">Manage your blog posts</p>
+          <h1 className="text-3xl font-bold mb-2 text-white">Blog Posts</h1>
+          <p className="text-gray-400">Manage your blog posts</p>
         </div>
         <Link href="/dashboard/posts/new">
-          <Button>
+          <Button className="bg-cyan-600 hover:bg-cyan-700 text-white">
             <Plus className="h-4 w-4 mr-2" />
             New Post
           </Button>
         </Link>
       </div>
 
-      <Card>
+      <Card className="bg-[#1a1a1a] border-gray-800">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Published</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="border-gray-800 hover:bg-gray-800/50">
+                <TableHead className="text-gray-300">Title</TableHead>
+                <TableHead className="text-gray-300">Published</TableHead>
+                <TableHead className="text-gray-300">Date</TableHead>
+                <TableHead className="text-right text-gray-300">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {posts.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableRow className="border-gray-800">
+                  <TableCell colSpan={4} className="text-center text-gray-400">
                     No posts found. Click "New Post" to get started.
                   </TableCell>
                 </TableRow>
@@ -167,22 +167,22 @@ const PostsPage = () => {
                 posts.map((post) => {
                   const postId = post._id || post.id || "";
                   return (
-                    <TableRow key={postId}>
-                      <TableCell className="font-medium">{post.title}</TableCell>
+                    <TableRow key={postId} className="border-gray-800 hover:bg-gray-800/50">
+                      <TableCell className="font-medium text-white">{post.title}</TableCell>
                       <TableCell>
                         <Badge
-                          className={post.isPublished ? "bg-green-600" : "bg-gray-500"}
+                          className={post.isPublished ? "bg-green-600 text-white" : "bg-gray-600 text-white"}
                         >
                           {post.isPublished ? "Published" : "Draft"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-gray-400">
                         {formatDate(post.publishedAt || post.createdAt)}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link href={`/dashboard/posts/${postId}`}>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-gray-800">
                               <Edit2 className="h-4 w-4" />
                             </Button>
                           </Link>
@@ -190,8 +190,9 @@ const PostsPage = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => openDeleteDialog(post)}
+                            className="text-gray-400 hover:text-red-500 hover:bg-gray-800"
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>

@@ -65,23 +65,23 @@ export function DataTable<TData, TValue>({
           onChange={(event) =>
             table.getColumn("title")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w-sm bg-[#1a1a1a] border-gray-800 text-white placeholder:text-gray-500"
         />
         <Link href="/dashboard/teacher/courses/create">
-         <Button >
+         <Button className="bg-cyan-600 hover:bg-cyan-700 text-white">
             <PlusCircle className="h-4 w-4 mr-2" />
             New Course
          </Button>
         </Link>
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border border-gray-800 bg-[#1a1a1a]">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-gray-800 hover:bg-gray-800/50">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-gray-300">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -100,9 +100,10 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="border-gray-800 hover:bg-gray-800/50"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-white">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -112,10 +113,10 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
+              <TableRow className="border-gray-800">
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-gray-400"
                 >
                   No results.
                 </TableCell>
@@ -130,6 +131,7 @@ export function DataTable<TData, TValue>({
           size="sm"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
+          className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white"
         >
           Previous
         </Button>
@@ -138,6 +140,7 @@ export function DataTable<TData, TValue>({
           size="sm"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
+          className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white"
         >
           Next
         </Button>

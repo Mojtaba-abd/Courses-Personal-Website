@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
-import { Loader2, BookOpen } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface Course {
   _id: string;
@@ -59,63 +56,67 @@ const CoursesPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-16">
+    <div className="min-h-screen bg-darker-bg text-text-primary">
+      <div className="container mx-auto px-5 py-24">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">الدورات</h1>
-            <p className="text-muted-foreground text-lg">
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-cyber bg-clip-text text-transparent">
+              <i className="fas fa-graduation-cap ml-4 text-secondary-old" /> الكورسات المتوفرة
+            </h1>
+            <p className="text-text-secondary text-lg">
               استكشف جميع دوراتنا التعليمية المتاحة
             </p>
           </div>
 
           {courses.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">لا توجد دورات متاحة حالياً.</p>
+              <p className="text-text-secondary">لا توجد دورات متاحة حالياً.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {courses.map((course) => (
                 <Link key={course._id} href={`/courses/${course._id}`}>
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
+                  <div className="overflow-hidden transition-all hover:-translate-y-2.5 hover:shadow-glow bg-glass-bg backdrop-blur-[10px] border border-glass-border rounded-2xl">
                     {course.featuredImage && (
-                      <div className="relative w-full h-48 bg-muted">
+                      <div className="w-full h-48 bg-gradient-cyber flex items-center justify-center text-5xl text-white/30 relative overflow-hidden">
                         <Image
                           src={course.featuredImage}
                           alt={course.title}
                           fill
+                          sizes="100vw"
                           className="object-cover"
                         />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-darker-bg" />
                       </div>
                     )}
-                    <CardContent className="p-6 flex-1 flex flex-col">
+                    <div className="p-6">
                       {course.category && (
-                        <Badge variant="secondary" className="mb-2 w-fit">
+                        <span className="inline-block px-3 py-1 rounded-full bg-gradient-2 text-white text-xs mb-3">
                           {course.category}
-                        </Badge>
+                        </span>
                       )}
-                      <h2 className="text-xl font-semibold mb-2 line-clamp-2">
+                      <h2 className="text-xl font-semibold mb-4 text-white line-clamp-2">
                         {course.title}
                       </h2>
                       {course.description && (
-                        <p className="text-sm text-muted-foreground mb-4 line-clamp-3 flex-1">
+                        <p className="text-sm text-text-secondary mb-4 line-clamp-3 flex-1">
                           {course.description}
                         </p>
                       )}
-                      <div className="flex items-center justify-between mt-auto">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <BookOpen className="h-4 w-4" />
+                      <div className="flex items-center justify-between mt-auto mb-4">
+                        <div className="flex items-center gap-2 text-xs text-text-secondary">
+                          <i className="fas fa-book text-secondary-old" />
                           <span>دورة تدريبية</span>
                         </div>
-                        <span className="text-md font-medium">
+                        <span className="text-md font-medium text-secondary-old">
                           {formatPrice(course.price)}
                         </span>
                       </div>
-                      <Link href={`/courses/${course._id}`} className="mt-4">
-                        <Button className="w-full">عرض التفاصيل</Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
+                      <div className="px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold text-sm text-center">
+                        عرض التفاصيل
+                      </div>
+                    </div>
+                  </div>
                 </Link>
               ))}
             </div>

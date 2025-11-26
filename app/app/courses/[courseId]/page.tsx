@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Play } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -192,64 +188,66 @@ const CoursePage = () => {
 
   if (isLoading || authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-darker-bg flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-secondary-old" />
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-darker-bg flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Coming Soon</h1>
-          <p className="text-muted-foreground">This course is not available yet.</p>
+          <h1 className="text-3xl font-bold mb-4 text-white">قريباً</h1>
+          <p className="text-text-secondary">هذه الدورة غير متاحة حالياً.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-darker-bg text-text-primary">
       {/* Hero Section */}
-      <div className="relative w-full h-96 bg-gradient-to-br from-primary/20 to-primary/5">
+      <div className="relative w-full h-96 bg-gradient-cyber">
         {course.featuredImage && (
           <div className="absolute inset-0">
             <Image
               src={course.featuredImage}
               alt={course.title}
               fill
+              sizes="100vw"
               className="object-cover opacity-20"
             />
           </div>
         )}
-        <div className="relative container mx-auto px-4 py-16 h-full flex flex-col justify-end">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-darker-bg" />
+        <div className="relative container mx-auto px-5 py-16 h-full flex flex-col justify-end">
           <div className="max-w-4xl">
             {course.category && (
-              <Badge variant="secondary" className="mb-4 capitalize">
+              <span className="inline-block px-3 py-1 rounded-full bg-gradient-2 text-white text-xs mb-4">
                 {course.category}
-              </Badge>
+              </span>
             )}
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">{course.title}</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">{course.title}</h1>
             {course.description && (
-              <p className="text-lg text-muted-foreground mb-6">{course.description}</p>
+              <p className="text-lg text-text-secondary mb-6">{course.description}</p>
             )}
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-6 text-sm text-text-secondary">
               {course.duration && (
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
+                  <i className="fas fa-clock text-secondary-old" />
                   <span>{course.duration}</span>
                 </div>
               )}
               {course.level && (
-                <Badge variant="outline" className="capitalize">
+                <span className="px-3 py-1 rounded-full bg-glass-bg border border-glass-border capitalize">
                   {course.level}
-                </Badge>
+                </span>
               )}
               {isEnrolled && (
-                <Badge className="bg-green-600 text-white">
-                  Enrolled
-                </Badge>
+                <span className="px-3 py-1 rounded-full bg-green-600 text-white">
+                  مسجل
+                </span>
               )}
             </div>
           </div>
@@ -257,92 +255,86 @@ const CoursePage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-5 py-8">
         <div className="max-w-md mx-auto">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle>Course Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Separator />
+            <div className="sticky top-4 p-6 bg-glass-bg backdrop-blur-[10px] border border-glass-border rounded-2xl">
+              <h2 className="text-2xl font-bold mb-6 text-white">تفاصيل الدورة</h2>
+              <div className="h-px bg-glass-border mb-6" />
 
-                <div className="space-y-3">
+                <div className="space-y-3 mb-6">
                   {isEnrolled ? (
-                    <Button
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
-                      size="lg"
+                    <button
+                      className="w-full px-6 py-3 rounded-[50px] bg-green-600 hover:bg-green-700 text-white font-semibold inline-flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-glow"
                       onClick={() => {
                         if (firstLessonUrl) {
                           router.push(firstLessonUrl);
                         } else {
-                          toast("No lessons available yet");
+                          toast("لا توجد دروس متاحة حالياً");
                         }
                       }}
                     >
-                      <Play className="h-4 w-4 mr-2" />
-                      Start Learning
-                    </Button>
+                      <i className="fas fa-play" /> ابدأ التعلم
+                    </button>
                   ) : (
-                    <Button
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
-                      size="lg"
+                    <button
+                      className="w-full px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-glow"
                       onClick={() => setIsModalOpen(true)}
                     >
-                      Request Access
-                    </Button>
+                      <i className="fas fa-user-plus" /> طلب الالتحاق
+                    </button>
                   )}
                 </div>
 
-                <Separator />
+                <div className="h-px bg-glass-border mb-6" />
 
-                <div className="space-y-2 text-sm">
+                <div className="space-y-3 text-sm">
                   {course.instructor && (
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Instructor</span>
-                      <span className="font-medium">{course.instructor}</span>
+                      <span className="text-text-secondary">المدرب</span>
+                      <span className="font-medium text-white">{course.instructor}</span>
                     </div>
                   )}
                   {course.level && (
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Level</span>
-                      <span className="font-medium capitalize">{course.level}</span>
+                      <span className="text-text-secondary">المستوى</span>
+                      <span className="font-medium text-white capitalize">{course.level}</span>
                     </div>
                   )}
                   {course.duration && (
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Duration</span>
-                      <span className="font-medium">{course.duration}</span>
+                      <span className="text-text-secondary">المدة</span>
+                      <span className="font-medium text-white">{course.duration}</span>
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+            </div>
         </div>
       </div>
 
       {/* Request Access Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] bg-[#1a1a1a] border-gray-800 text-white">
           <DialogHeader>
-            <DialogTitle>Request Access</DialogTitle>
-            <DialogDescription>
-              Fill out the form below to request access to this course. We'll get back to you soon.
+            <DialogTitle className="text-white">طلب الالتحاق</DialogTitle>
+            <DialogDescription className="text-text-secondary">
+              املأ النموذج أدناه لطلب الالتحاق بهذه الدورة. سنتواصل معك قريباً.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitRequest}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="name" className="text-white">الاسم *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Your full name"
+                  placeholder="الاسم الكامل"
                   required
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="email" className="text-white">البريد الإلكتروني *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -350,26 +342,29 @@ const CoursePage = () => {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="your.email@example.com"
                   required
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone" className="text-white">الهاتف</Label>
                 <Input
                   id="phone"
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="+1 (555) 123-4567"
+                  placeholder="+964 786 900 1400"
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="message">Message (Optional)</Label>
+                <Label htmlFor="message" className="text-white">الرسالة (اختياري)</Label>
                 <Textarea
                   id="message"
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  placeholder="Tell us why you're interested in this course..."
+                  placeholder="أخبرنا لماذا أنت مهتم بهذه الدورة..."
                   rows={4}
+                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
               <input type="hidden" value={courseId} />
@@ -381,17 +376,18 @@ const CoursePage = () => {
                 variant="outline"
                 onClick={() => setIsModalOpen(false)}
                 disabled={isSubmitting}
+                className="border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white"
               >
-                Cancel
+                إلغاء
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700">
+              <Button type="submit" disabled={isSubmitting} className="bg-gradient-2 hover:bg-gradient-2 hover:opacity-90 text-white">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Submitting...
+                    جاري الإرسال...
                   </>
                 ) : (
-                  "Submit Request"
+                  "إرسال الطلب"
                 )}
               </Button>
             </DialogFooter>

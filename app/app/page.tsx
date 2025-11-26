@@ -5,8 +5,11 @@ import Link from "next/link";
 import axios from "axios";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
-import ParticlesBackground from "@/components/particles-background";
-import MatrixRain from "@/components/matrix-rain";
+declare global {
+  interface Window {
+    particlesJS: any;
+  }
+}
 
 interface Certificate {
   _id: string;
@@ -62,6 +65,58 @@ const HomePage = () => {
     fetchData();
     initTyping();
     handleNavbarScroll();
+    
+    // Initialize particles after script loads
+    const initParticles = () => {
+      if (typeof window !== "undefined" && window.particlesJS) {
+        const particlesElement = document.getElementById("particles-js");
+        if (particlesElement) {
+          try {
+            // Clear any existing particles instance
+            if ((particlesElement as any).pJS) {
+              (particlesElement as any).pJS.fn.vendors.destroypJS();
+            }
+            
+            window.particlesJS("particles-js", {
+              "particles": {
+                "number": { "value": 100, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#00ffcc" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.5, "random": true },
+                "size": { "value": 3, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#00ffcc", "opacity": 0.4, "width": 1 },
+                "move": { "enable": true, "speed": 4, "direction": "none", "random": false, "straight": false, "out_mode": "out" }
+              },
+              "interactivity": {
+                "detect_on": "canvas",
+                "events": { "onhover": { "enable": true, "mode": "repulse" }, "onclick": { "enable": true, "mode": "push" }, "resize": true }
+              },
+              "retina_detect": true
+            });
+            console.log("Particles initialized successfully");
+          } catch (error) {
+            console.error("Error initializing particles:", error);
+          }
+        } else {
+          console.warn("Particles element not found");
+        }
+      }
+    };
+    
+    // Retry mechanism for particles.js loading
+    let retries = 0;
+    const maxRetries = 50;
+    const checkParticles = setInterval(() => {
+      retries++;
+      if (typeof window !== "undefined" && window.particlesJS) {
+        clearInterval(checkParticles);
+        // Small delay to ensure DOM is ready
+        setTimeout(initParticles, 100);
+      } else if (retries >= maxRetries) {
+        clearInterval(checkParticles);
+        console.warn("Particles.js failed to load after 5 seconds");
+      }
+    }, 100);
     
     // Initialize AOS after scripts load
     const initAOSDelayed = () => {
@@ -199,9 +254,7 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-darker-bg text-text-primary overflow-x-hidden relative">
-      <div id="particles-js" className="fixed inset-0 -z-10" />
-      <ParticlesBackground />
-      <MatrixRain />
+      <div id="particles-js" className="fixed inset-0 z-0 pointer-events-none w-full h-full" style={{ minHeight: '100vh' }} />
 
       {/* Navigation */}
       <nav
@@ -295,11 +348,6 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-        <div className="absolute bottom-8 right-1/2 translate-x-1/2">
-          <div className="w-6 h-10 border-2 border-secondary-old rounded-[15px] relative">
-            <div className="w-1 h-2 bg-secondary-old rounded-sm absolute top-2 right-1/2 translate-x-1/2 animate-scroll" />
-          </div>
-        </div>
       </section>
 
       {/* About Section */}
@@ -314,6 +362,7 @@ const HomePage = () => {
                 src="/images/1.JPG"
                 alt="صورة حسين الحلو"
                 fill
+                sizes="100vw"
                 className="object-cover object-top transition-transform duration-400 hover:scale-105"
                 unoptimized
               />
@@ -379,6 +428,7 @@ const HomePage = () => {
                         src={cert.imageUrl}
                         alt={cert.title}
                         fill
+                        sizes="100vw"
                         className="object-cover"
                         unoptimized
                       />
@@ -422,7 +472,7 @@ const HomePage = () => {
                     <div className="overflow-hidden transition-all hover:-translate-y-2.5 hover:shadow-glow bg-glass-bg backdrop-blur-[10px] border border-glass-border rounded-2xl">
                       <div className="w-full h-48 bg-gradient-cyber flex items-center justify-center text-5xl text-white/30 relative overflow-hidden">
                         {post.featuredImage ? (
-                          <Image src={post.featuredImage} alt={post.title} fill className="object-cover" />
+                          <Image src={post.featuredImage} alt={post.title} fill sizes="100vw" className="object-cover" />
                         ) : (
                           <i className="fas fa-newspaper" />
                         )}
@@ -437,9 +487,9 @@ const HomePage = () => {
                         </div>
                         <h3 className="text-xl mb-4">{post.title}</h3>
                         <p className="text-text-secondary leading-relaxed mb-5 line-clamp-3">{post.excerpt}</p>
-                        <a className="text-secondary-old font-semibold inline-flex items-center gap-1.5 transition-all hover:gap-2.5">
+                        <span className="text-secondary-old font-semibold inline-flex items-center gap-1.5 transition-all hover:gap-2.5">
                           اقرأ المزيد <i className="fas fa-arrow-left" />
-                        </a>
+                        </span>
                       </div>
                     </div>
                   </Link>
@@ -479,6 +529,7 @@ const HomePage = () => {
                           src={course.featuredImage || course.imageUrl || ""}
                           alt={course.title}
                           fill
+                          sizes="100vw"
                           className="object-cover"
                           unoptimized
                         />
@@ -501,7 +552,7 @@ const HomePage = () => {
                         href={`/courses/${course._id}`}
                         className="px-6 py-3 rounded-[50px] bg-gradient-2 text-white font-semibold inline-flex items-center gap-2 text-sm transition-all hover:-translate-y-0.5 hover:shadow-glow w-full justify-center"
                       >
-                        <i className="fas fa-user-plus" /> طلب الالتحاق
+                        <i className="fas fa-arrow-left" /> عرض التفاصيل
                       </Link>
                     </div>
                   </div>
@@ -601,7 +652,7 @@ const HomePage = () => {
       {/* Footer */}
       <footer className="bg-darker-bg py-16 pt-24 border-t border-glass-border">
         <div className="container mx-auto px-5">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-10">
             <div data-aos="fade-up">
               <h3 className="mb-5">
                 <i className="fas fa-shield-halved text-secondary-old ml-2.5" /> Hussein Ali
@@ -644,34 +695,10 @@ const HomePage = () => {
                 </li>
               </ul>
             </div>
-            <div data-aos="fade-up" data-aos-delay="200">
-              <h4 className="mb-5">الخدمات</h4>
-              <ul className="list-none">
-                <li className="mb-3">
-                  <a href="#" className="text-text-secondary hover:text-secondary-old transition-all hover:pr-1.5">
-                    فحص أمان أنظمة الكمبيوتر
-                  </a>
-                </li>
-                <li className="mb-3">
-                  <a href="#" className="text-text-secondary hover:text-secondary-old transition-all hover:pr-1.5">
-                    تحليل الثغرات
-                  </a>
-                </li>
-                <li className="mb-3">
-                  <a href="#" className="text-text-secondary hover:text-secondary-old transition-all hover:pr-1.5">
-                    الاستشارات الأمنية
-                  </a>
-                </li>
-                <li className="mb-3">
-                  <a href="#" className="text-text-secondary hover:text-secondary-old transition-all hover:pr-1.5">
-                    التدريب
-                  </a>
-                </li>
-              </ul>
-            </div>
           </div>
           <div className="text-center pt-8 border-t border-glass-border">
             <p className="text-text-secondary mb-2.5">© 2025 حسين الحلو. جميع الحقوق محفوظة.</p>
+            <p className="text-text-secondary mb-2.5">Made by مجتبى عبدالمطلب</p>
             <p className="text-secondary-old font-semibold">
               <i className="fas fa-lock ml-1.5" /> محمي بأعلى معايير الأمان
             </p>

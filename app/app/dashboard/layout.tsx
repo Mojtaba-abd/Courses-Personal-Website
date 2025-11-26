@@ -50,14 +50,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className="h-full">
-      <div className="h-[80px] md:pl-56 fixed inset-y-0 w-full z-50">
+    <div className="h-full bg-[#0f0f0f]">
+      <div className="h-[80px] md:pl-56 fixed top-0 left-0 right-0 w-full z-50">
         <Navbar />
       </div>
-      <div className="h-full hidden md:flex flex-col w-56 fixed inset-y-0 border-r z-50 ">
+      <div className="h-full hidden md:flex flex-col w-56 fixed top-0 left-0 bottom-0 border-r border-gray-800 z-50">
         <Sidebar />
       </div>
-      <main className="h-full pt-[80px] md:pl-56">{children}</main>
+      <main className="h-full pt-[80px] md:pl-56 bg-[#0f0f0f] text-white">{children}</main>
     </div>
   );
 };
