@@ -208,6 +208,24 @@ const LessonPage = () => {
     }
   }, [courseId, chapterId, lessonId, user, authLoading]);
 
+  // Save last viewed lesson to localStorage
+  useEffect(() => {
+    if (lesson && courseId && chapterId && lessonId && user?.id) {
+      try {
+        const lastViewedKey = `lastViewed_${courseId}_${user.id}`;
+        localStorage.setItem(lastViewedKey, JSON.stringify({
+          courseId,
+          chapterId,
+          lessonId,
+          timestamp: Date.now()
+        }));
+      } catch (error) {
+        // localStorage might be disabled or full, ignore silently
+        console.warn("Failed to save last viewed lesson:", error);
+      }
+    }
+  }, [lesson, courseId, chapterId, lessonId, user?.id]);
+
   const fetchData = async () => {
     try {
       setIsLoading(true);
