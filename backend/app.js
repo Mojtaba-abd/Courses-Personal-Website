@@ -92,12 +92,28 @@ if (!mongoUrl) {
   process.exit(1);
 }
 
+// MongoDB connection options
+const mongooseOptions = {
+  // These options help with authentication and connection stability
+  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+  socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+};
+
 mongoose
-  .connect(mongoUrl)
+  .connect(mongoUrl, mongooseOptions)
   .then(() => {
+    console.log("✅ Connected to MongoDB");
     app.listen(port, () => console.log(`✅ Server connected on port ${port}`));
   })
   .catch((err) => {
-    console.log("❌ MongoDB connection error:", err.message);
+    console.error("❌ MongoDB connection error:", err.message);
+    if (err.message.includes("authentication") || err.code === 13 || err.codeName === "Unauthorized") {
+      console.error("\n💡 Authentication Error - Your MongoDB requires authentication.");
+      console.error("   Update your connection string in .env to include username and password:");
+      console.error("   Format: mongodb://username:password@host:port/database");
+      console.error("   Example: mongodb://myuser:mypassword@localhost:27017/lms-database");
+      console.error("   Or for MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/database");
+      console.error("\n   Make sure to URL-encode special characters in your password!");
+    }
     process.exit(1);
   });

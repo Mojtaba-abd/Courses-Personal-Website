@@ -24,6 +24,7 @@ interface Lesson {
   duration: string;
   isFree: boolean;
   position: number;
+  lessonType?: "video" | "text";
   attachments?: Array<{
     name: string;
     url: string;
@@ -103,6 +104,10 @@ const LessonPage = () => {
   // YouTube Player API setup (must be before conditional returns)
   useEffect(() => {
     if (!lesson || !lesson.videoUrl) return;
+    
+    // Only initialize player for video lessons
+    const lessonType = lesson.lessonType || (lesson.videoUrl ? "video" : "text");
+    if (lessonType !== "video") return;
     
     const videoId = getYouTubeVideoId(lesson.videoUrl);
     if (!videoId) return;
@@ -379,6 +384,9 @@ const LessonPage = () => {
   // Extract videoId from lesson (after conditional checks, before JSX)
   const videoUrl = lesson?.videoUrl || "";
   const videoId = videoUrl ? getYouTubeVideoId(videoUrl) : null;
+  const lessonType = lesson?.lessonType || (videoUrl ? "video" : "text");
+  const isVideoLesson = lessonType === "video";
+  const isTextLesson = lessonType === "text";
 
   return (
     <div className="min-h-screen bg-darker-bg text-text-primary">
@@ -428,25 +436,37 @@ const LessonPage = () => {
                 )}
               </div>
               <div className="space-y-6">
-                {/* Video */}
-                {!videoId ? (
-                  <div className="aspect-video bg-gray-800 rounded-lg flex items-center justify-center">
-                    <p className="text-text-secondary">لا يوجد فيديو لهذا الدرس</p>
-                  </div>
-                ) : (
+                {/* Video - Only show for video lessons */}
+                {isVideoLesson && (
+                  <>
+                    {!videoId ? (
+                      <div className="aspect-video bg-gray-800 rounded-lg flex items-center justify-center">
+                        <p className="text-text-secondary">لا يوجد فيديو لهذا الدرس</p>
+                      </div>
+                    ) : (
+                      <div
+                        className="relative aspect-video w-full rounded-lg overflow-hidden bg-black select-none"
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          return false;
+                        }}
+                        onDragStart={(e) => e.preventDefault()}
+                        onSelectStart={(e) => e.preventDefault()}
+                        style={{ userSelect: "none", WebkitUserSelect: "none" }}
+                      >
+                        <div id="youtube-player" className="w-full h-full" />
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Text Content - Only show for text lessons */}
+                {isTextLesson && lesson.content && (
                   <div
-                    className="relative aspect-video w-full rounded-lg overflow-hidden bg-black select-none"
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      return false;
-                    }}
-                    onDragStart={(e) => e.preventDefault()}
-                    onSelectStart={(e) => e.preventDefault()}
-                    style={{ userSelect: "none", WebkitUserSelect: "none" }}
-                  >
-                    <div id="youtube-player" className="w-full h-full" />
-                  </div>
+                    className="prose prose-lg prose-slate max-w-none dark:prose-invert text-white"
+                    dangerouslySetInnerHTML={{ __html: lesson.content }}
+                  />
                 )}
 
                 {/* Description */}
@@ -454,17 +474,6 @@ const LessonPage = () => {
                   <div>
                     <h3 className="font-semibold mb-2 text-white">الوصف</h3>
                     <p className="text-text-secondary whitespace-pre-wrap">{lesson.description}</p>
-                  </div>
-                )}
-
-                {/* Content */}
-                {lesson.content && (
-                  <div>
-                    <h3 className="font-semibold mb-2 text-white">المحتوى</h3>
-                    <div
-                      className="prose prose-sm max-w-none prose-invert prose-headings:text-white prose-p:text-text-secondary prose-strong:text-white prose-a:text-secondary-old"
-                      dangerouslySetInnerHTML={{ __html: lesson.content }}
-                    />
                   </div>
                 )}
 

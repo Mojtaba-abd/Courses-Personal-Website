@@ -18,6 +18,7 @@ interface LessonViewerProps {
   content?: string;
   description?: string;
   videoUrl?: string;
+  lessonType?: "video" | "text";
   attachments?: LessonAttachment[];
   className?: string;
 }
@@ -27,31 +28,37 @@ export const LessonViewer = ({
   content,
   description,
   videoUrl,
+  lessonType,
   attachments = [],
   className = "",
 }: LessonViewerProps) => {
+  // Determine lesson type: use provided type, or infer from content
+  const type = lessonType || (videoUrl ? "video" : "text");
+  const isVideoLesson = type === "video";
+  const isTextLesson = type === "text";
+
   return (
     <div className={`space-y-6 ${className}`}>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">{title}</CardTitle>
-          {description && !content && (
+          {description && (
             <p className="text-muted-foreground mt-2">{description}</p>
           )}
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* YouTube Video */}
-          {videoUrl && (
+          {/* YouTube Video - Only show for video lessons */}
+          {isVideoLesson && videoUrl && (
             <>
               <div className="w-full">
                 <ProtectedYouTubePlayer videoUrl={videoUrl} title={title} />
               </div>
-              <Separator />
+              {isTextLesson && content && <Separator />}
             </>
           )}
 
-          {/* Rich Text Content */}
-          {content && (
+          {/* Rich Text Content - Only show for text lessons */}
+          {isTextLesson && content && (
             <div
               className="prose prose-lg prose-slate max-w-none dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: content }}

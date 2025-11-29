@@ -25,8 +25,12 @@ const createAdmin = async () => {
     }
 
     console.log("🔌 Connecting to MongoDB...");
-    // Connect to MongoDB
-    await mongoose.connect(mongoUrl);
+    // Connect to MongoDB with connection options
+    const mongooseOptions = {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    };
+    await mongoose.connect(mongoUrl, mongooseOptions);
     console.log("✅ Connected to MongoDB");
 
     // Get admin credentials from command line or use defaults
@@ -74,11 +78,17 @@ const createAdmin = async () => {
     process.exit(0);
   } catch (error) {
     console.error("\n❌ Error creating admin user:", error.message);
-    if (error.message.includes("connect")) {
+    if (error.message.includes("connect") || error.message.includes("authentication") || error.code === 13 || error.codeName === "Unauthorized") {
       console.error("\n💡 Make sure:");
       console.error("   1. MongoDB is running");
       console.error("   2. Your .env file has the correct URL");
-      console.error("   3. The connection string is correct");
+      if (error.message.includes("authentication") || error.code === 13 || error.codeName === "Unauthorized") {
+        console.error("   3. Your connection string includes username and password:");
+        console.error("      Format: mongodb://username:password@host:port/database");
+        console.error("      Example: mongodb://myuser:mypassword@localhost:27017/lms-database");
+      } else {
+        console.error("   3. The connection string is correct");
+      }
     }
     await mongoose.disconnect().catch(() => {});
     process.exit(1);

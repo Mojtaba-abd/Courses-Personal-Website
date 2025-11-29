@@ -22,6 +22,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -59,6 +66,7 @@ interface Lesson {
   chapterId: string;
   courseId: string;
   position: number;
+  lessonType?: "video" | "text";
   attachments?: LessonAttachment[];
 }
 
@@ -111,6 +119,7 @@ const CreateCoursePage = () => {
   const [lessonAttachments, setLessonAttachments] = useState<LessonAttachment[]>([]);
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [isPublished, setIsPublished] = useState<boolean>(false);
+  const [lessonType, setLessonType] = useState<"video" | "text">("text");
 
   const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
 
@@ -223,14 +232,18 @@ const CreateCoursePage = () => {
     setYoutubeThumbnail("");
     setLessonContent("");
     setLessonAttachments([]);
+    setLessonType("text");
     setLessonDialogOpen(true);
   };
 
   const openEditLessonDialog = (lesson: Lesson) => {
     setEditingLesson(lesson);
     setSelectedChapterId(lesson.chapterId);
+    // Determine lesson type: if videoUrl exists, it's a video lesson, otherwise text
+    const type = lesson.lessonType || (lesson.videoUrl ? "video" : "text");
+    setLessonType(type);
     setYoutubeThumbnail(getYouTubeThumbnail(lesson.videoUrl));
-    setLessonContent(lesson.content || lesson.description || "");
+    setLessonContent(lesson.content || "");
     setLessonAttachments(lesson.attachments || []);
     setLessonDialogOpen(true);
   };
@@ -332,9 +345,28 @@ const CreateCoursePage = () => {
     const duration = formData.get("duration") as string;
     const isFree = formData.get("isFree") === "on";
 
-    // Use rich text content, fallback to description if empty
-    const content = lessonContent || "";
-    const description = content.substring(0, 200).replace(/<[^>]*>/g, ""); // Plain text excerpt
+    // Use rich text content for text lessons
+    const content = lessonType === "text" ? lessonContent : "";
+    const description = content.substring(0, 200).replace(/<[^>]*>/g, "") || title; // Plain text excerpt
+
+    // Prepare lesson data based on type
+    const lessonData: any = {
+      title,
+      description,
+      lessonType,
+      isFree,
+      attachments: lessonAttachments,
+    };
+
+    if (lessonType === "video") {
+      lessonData.videoUrl = videoUrl;
+      lessonData.duration = duration;
+      lessonData.content = ""; // Clear content for video lessons
+    } else {
+      lessonData.content = content;
+      lessonData.videoUrl = ""; // Clear videoUrl for text lessons
+      lessonData.duration = ""; // Clear duration for text lessons
+    }
 
     if (editingLesson) {
       // Update existing lesson
@@ -342,7 +374,7 @@ const CreateCoursePage = () => {
         ...lessonsByChapter,
         [selectedChapterId]: (lessonsByChapter[selectedChapterId] || []).map((l) =>
           l._id === editingLesson._id
-            ? { ...l, title, description, content, videoUrl, duration, isFree, attachments: lessonAttachments }
+            ? { ...l, ...lessonData }
             : l
         ),
       });
@@ -351,16 +383,10 @@ const CreateCoursePage = () => {
       // Add new lesson
       const newLesson: Lesson = {
         _id: `temp-${Date.now()}`,
-        title,
-        description,
-        content,
-        videoUrl,
-        duration,
-        isFree,
+        ...lessonData,
         chapterId: selectedChapterId,
         courseId: "",
         position: (lessonsByChapter[selectedChapterId]?.length || 0),
-        attachments: lessonAttachments,
       };
 
       setLessonsByChapter({
@@ -374,6 +400,7 @@ const CreateCoursePage = () => {
     setSelectedChapterId("");
     setLessonContent("");
     setLessonAttachments([]);
+    setLessonType("text");
   };
 
   const handleDeleteLesson = async (lessonId: string, chapterId: string) => {
@@ -813,7 +840,7 @@ const CreateCoursePage = () => {
       {/* Create Course Button */}
       <div className="flex items-center justify-end gap-4 pt-6 border-t">
         <Link href="/dashboard/teacher/courses">
-          <Button variant="outline">Cancel</Button>
+          <Button variant="outline" className="bg-[#1a1a1a] border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white">Cancel</Button>
         </Link>
         <Button onClick={handleCreateCourse} disabled={!title.trim() || isSaving} size="lg">
           {isSaving ? (
@@ -889,51 +916,82 @@ const CreateCoursePage = () => {
                   className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                 />
               </div>
-              
+
               <div className="grid gap-2">
-                <Label htmlFor="lesson-content" className="text-white">Content (Rich Text)</Label>
-                <RichTextEditor
-                  value={lessonContent}
-                  onChange={setLessonContent}
-                />
+                <Label htmlFor="lesson-type" className="text-white">Lesson Type</Label>
+                <Select
+                  value={lessonType}
+                  onValueChange={(value: "video" | "text") => {
+                    setLessonType(value);
+                    if (value === "video") {
+                      setLessonContent("");
+                    } else {
+                      setYoutubeThumbnail("");
+                    }
+                  }}
+                >
+                  <SelectTrigger id="lesson-type" className="bg-[#0f0f0f] border-gray-800 text-white [&>span]:text-white">
+                    <SelectValue placeholder="Select lesson type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a1a] border-gray-800">
+                    <SelectItem value="text" className="text-white hover:bg-gray-800 focus:bg-gray-800 focus:text-white">Text Lesson</SelectItem>
+                    <SelectItem value="video" className="text-white hover:bg-gray-800 focus:bg-gray-800 focus:text-white">Video Lesson</SelectItem>
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-gray-400">
-                  Use the editor to add formatted text, images, and links. Images will be uploaded automatically.
+                  Choose whether this lesson contains text content or a video.
                 </p>
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="lesson-video" className="text-white">Video URL (YouTube)</Label>
-                <Input
-                  id="lesson-video"
-                  name="videoUrl"
-                  type="url"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  defaultValue={editingLesson?.videoUrl || ""}
-                  onChange={(e) => setYoutubeThumbnail(getYouTubeThumbnail(e.target.value))}
-                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
-                />
-                {youtubeThumbnail && (
-                  <div className="relative w-full h-48 mt-2 rounded-lg overflow-hidden">
-                    <img
-                      src={youtubeThumbnail}
-                      alt="YouTube thumbnail"
-                      className="w-full h-full object-cover"
+              {lessonType === "text" ? (
+                <div className="grid gap-2">
+                  <Label htmlFor="lesson-content" className="text-white">Content (Rich Text)</Label>
+                  <RichTextEditor
+                    value={lessonContent}
+                    onChange={setLessonContent}
+                  />
+                  <p className="text-xs text-gray-400">
+                    Use the editor to add formatted text, images, and links. Images will be uploaded automatically.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-2">
+                    <Label htmlFor="lesson-video" className="text-white">Video URL (YouTube)</Label>
+                    <Input
+                      id="lesson-video"
+                      name="videoUrl"
+                      type="url"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      defaultValue={editingLesson?.videoUrl || ""}
+                      required={lessonType === "video"}
+                      onChange={(e) => setYoutubeThumbnail(getYouTubeThumbnail(e.target.value))}
+                      className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
+                    />
+                    {youtubeThumbnail && (
+                      <div className="relative w-full h-48 mt-2 rounded-lg overflow-hidden">
+                        <img
+                          src={youtubeThumbnail}
+                          alt="YouTube thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="lesson-duration" className="text-white">Duration (minutes)</Label>
+                    <Input
+                      id="lesson-duration"
+                      name="duration"
+                      type="number"
+                      placeholder="e.g., 15"
+                      defaultValue={editingLesson?.duration || ""}
+                      className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
                     />
                   </div>
-                )}
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="lesson-duration" className="text-white">Duration (minutes)</Label>
-                <Input
-                  id="lesson-duration"
-                  name="duration"
-                  type="number"
-                  placeholder="e.g., 15"
-                  defaultValue={editingLesson?.duration || ""}
-                  className="bg-[#0f0f0f] border-gray-800 text-white placeholder:text-gray-500"
-                />
-              </div>
+                </>
+              )}
 
               <div className="flex items-center space-x-2">
                 <Checkbox

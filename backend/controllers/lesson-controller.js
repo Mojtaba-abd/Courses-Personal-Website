@@ -37,7 +37,7 @@ export const getOneLesson = async (req, res) => {
 
 export const createLesson = async (req, res) => {
   try {
-    const { chapterId, courseId } = req.body;
+    const { chapterId, courseId, lessonType, videoUrl, content } = req.body;
     const isAdmin = req.user && req.user.role === "admin";
     const isTeacher = req.user && req.user.role === "teacher";
     const userId = req.user?.userId;
@@ -53,6 +53,27 @@ export const createLesson = async (req, res) => {
       }
     }
 
+    // Validate lesson type: must be either "video" or "text"
+    if (!lessonType || !["video", "text"].includes(lessonType)) {
+      return res.status(400).json({ error: "Lesson type must be either 'video' or 'text'" });
+    }
+
+    // Validate that video and text are not both provided
+    if (lessonType === "video") {
+      if (!videoUrl || videoUrl.trim() === "") {
+        return res.status(400).json({ error: "Video URL is required for video lessons" });
+      }
+      // Clear content for video lessons
+      req.body.content = "";
+    } else if (lessonType === "text") {
+      if (!content || content.trim() === "") {
+        return res.status(400).json({ error: "Content is required for text lessons" });
+      }
+      // Clear videoUrl for text lessons
+      req.body.videoUrl = "";
+      req.body.duration = "";
+    }
+
     const lesson = await lessonModel.create({ ...req.body });
     res.status(201).json(lesson);
   } catch (error) {
@@ -64,6 +85,7 @@ export const createLesson = async (req, res) => {
 export const updateLesson = async (req, res) => {
   try {
     const { lessonId, chapterId } = req.params;
+    const { lessonType, videoUrl, content } = req.body;
     const isAdmin = req.user && req.user.role === "admin";
     const isTeacher = req.user && req.user.role === "teacher";
     const userId = req.user?.userId;
@@ -83,6 +105,32 @@ export const updateLesson = async (req, res) => {
       if (course.userId !== userId) {
         return res.status(403).json({ error: "Forbidden - You can only update lessons in your own courses" });
       }
+    }
+
+    // Determine lesson type (use existing if not provided in update)
+    const finalLessonType = lessonType || existingLesson.lessonType;
+
+    // Validate lesson type: must be either "video" or "text"
+    if (finalLessonType && !["video", "text"].includes(finalLessonType)) {
+      return res.status(400).json({ error: "Lesson type must be either 'video' or 'text'" });
+    }
+
+    // Validate that video and text are not both provided
+    if (finalLessonType === "video") {
+      const finalVideoUrl = videoUrl !== undefined ? videoUrl : existingLesson.videoUrl;
+      if (!finalVideoUrl || finalVideoUrl.trim() === "") {
+        return res.status(400).json({ error: "Video URL is required for video lessons" });
+      }
+      // Clear content for video lessons
+      req.body.content = "";
+    } else if (finalLessonType === "text") {
+      const finalContent = content !== undefined ? content : existingLesson.content;
+      if (!finalContent || finalContent.trim() === "") {
+        return res.status(400).json({ error: "Content is required for text lessons" });
+      }
+      // Clear videoUrl for text lessons
+      req.body.videoUrl = "";
+      req.body.duration = "";
     }
 
     const lesson = await lessonModel.findOneAndUpdate(

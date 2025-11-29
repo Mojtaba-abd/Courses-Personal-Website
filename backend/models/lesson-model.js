@@ -18,6 +18,12 @@ const lessonSchema = mongoose.Schema(
       type: String,
       default: "",
     },
+    lessonType: {
+      type: String,
+      enum: ["video", "text"],
+      required: true,
+      default: "text",
+    },
     content: {
       type: String,
       default: "",
