@@ -35,6 +35,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 import { ImageIcon, X } from "lucide-react";
@@ -65,6 +66,7 @@ const CertificationsPage = () => {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isPublished, setIsPublished] = useState<boolean>(true);
 
   const API_URL = process.env.NEXT_PUBLIC_BACK_END_URL || "http://localhost:8000";
 
@@ -102,6 +104,7 @@ const CertificationsPage = () => {
     setEditingCertificate(null);
     setImageUrl("");
     setImagePreview("");
+    setIsPublished(true);
     setCreateDialogOpen(true);
   };
 
@@ -110,6 +113,7 @@ const CertificationsPage = () => {
     const url = certificate.imageUrl || "";
     setImageUrl(url);
     setImagePreview(url);
+    setIsPublished(certificate.isPublished ?? false);
     setEditDialogOpen(true);
   };
 
@@ -189,7 +193,7 @@ const CertificationsPage = () => {
         const certId = editingCertificate._id || editingCertificate.id || "";
         await axios.put(
           `${API_URL}/api/certificates/${certId}`,
-          { title, issuer, issueDate, certificateUrl, imageUrl: finalImageUrl, description },
+          { title, issuer, issueDate, certificateUrl, imageUrl: finalImageUrl, description, isPublished },
           { withCredentials: true }
         );
         toast.success("Certificate updated successfully");
@@ -197,13 +201,17 @@ const CertificationsPage = () => {
       } else {
         await axios.post(
           `${API_URL}/api/certificates`,
-          { title, issuer, issueDate, certificateUrl, imageUrl: finalImageUrl, description },
+          { title, issuer, issueDate, certificateUrl, imageUrl: finalImageUrl, description, isPublished },
           { withCredentials: true }
         );
         toast.success("Certificate created successfully");
         setCreateDialogOpen(false);
       }
       fetchCertificates();
+      // Reset form state
+      setImageUrl("");
+      setImagePreview("");
+      setIsPublished(true);
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to save certificate");
     }
@@ -365,6 +373,7 @@ const CertificationsPage = () => {
             setEditingCertificate(null);
             setImageUrl("");
             setImagePreview("");
+            setIsPublished(true);
           }
         }}
       >
@@ -439,6 +448,20 @@ const CertificationsPage = () => {
                   className="flex min-h-[80px] w-full rounded-md border border-gray-800 bg-[#0f0f0f] px-3 py-2 text-sm text-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
                   defaultValue={editingCertificate?.description || ""}
                 />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isPublished"
+                  checked={isPublished}
+                  onCheckedChange={(checked) => setIsPublished(checked === true)}
+                  className="border-gray-600 data-[state=checked]:bg-cyan-600 data-[state=checked]:border-cyan-600"
+                />
+                <Label
+                  htmlFor="isPublished"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white cursor-pointer"
+                >
+                  Publish on home page
+                </Label>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="certificate-image" className="text-white">Certificate Image *</Label>
